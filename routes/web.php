@@ -38,6 +38,12 @@ Route::middleware('api.token')->group(function () {
     // Pagos
     Route::get('/payment/{registration}', [PaymentController::class, 'process'])->name('payment.process');
     Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
+    Route::get('/paypal/pay', [PaymentController::class, 'createPayment'])->name('paypal.pay');
+    Route::get('/paypal/success', [PaymentController::class, 'capturePayment'])->name('paypal.success');
+    Route::get('/paypal/cancel', function () {
+        //Cambiar por una vista
+        return "Pago cancelado.";
+    })->name('paypal.cancel');
     
     // Perfil
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
