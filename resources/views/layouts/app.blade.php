@@ -12,12 +12,8 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
-<<<<<<< HEAD
         @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-=======
-        @vite(['resources/css/app.css', 'resources/js/components/app.jsx'])
->>>>>>> 1326d880887c423311c0f23c3993e50fad095fcf
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -37,6 +33,6 @@
                 @yield('content')
             </main>
         </div>
-        <script type="module" src="{{ mix('resources/js/components/app.jsx') }}"></script>
+        <script type="module" src="{{ mix('resources/js/app.js') }}"></script>
     </body>
 </html>
