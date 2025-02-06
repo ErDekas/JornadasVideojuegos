@@ -33,6 +33,6 @@
                 @yield('content')
             </main>
         </div>
-        <script type="module" src="{{ mix('resources/js/components/app.jsx') }}"></script>
+        <script type="module" src="{{ mix('resources/js/app.js') }}"></script>
     </body>
 </html>
