@@ -12,11 +12,11 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite(['resources/css/app.css', 'resources/js/components/app.jsx'])
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @include('layouts.navigation')
+            <div id="navbar-root"></div> {{-- React montará aquí el Navbar --}}
 
             <!-- Page Heading -->
             @isset($header)
@@ -29,8 +29,9 @@
 
             <!-- Page Content -->
             <main>
-                {{ $slot }}
+                @yield('content')
             </main>
         </div>
+        <script type="module" src="{{ mix('resources/js/components/app.jsx') }}"></script>
     </body>
 </html>
