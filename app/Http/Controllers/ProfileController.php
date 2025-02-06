@@ -2,35 +2,59 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\ApiService;
+use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    protected $apiService;
-
-    public function __construct(ApiService $apiService)
+    /**
+     * Display the user's profile form.
+     */
+    public function edit(Request $request): View
     {
-        $this->apiService = $apiService;
-        $this->middleware('api.token');
+        return view('profile.edit', [
+            'user' => $request->user(),
+        ]);
     }
 
-    public function show()
+    /**
+     * Update the user's profile information.
+     */
+    public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $profile = $this->apiService->get('/profile');
-        $registrations = $this->apiService->get('/profile/registrations');
-        
-        return view('profile.show', compact('profile', 'registrations'));
+        $request->user()->fill($request->validated());
+
+        if ($request->user()->isDirty('email')) {
+            $request->user()->email_verified_at = null;
+        }
+
+        $request->user()->save();
+
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    public function update(Request $request)
+    /**
+     * Delete the user's account.
+     */
+    public function destroy(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email'
+        $request->validateWithBag('userDeletion', [
+            'password' => ['required', 'current_password'],
         ]);
 
-        $profile = $this->apiService->put('/profile', $validated);
-        return redirect()->route('profile.show')->with('success', 'Perfil actualizado correctamente');
+        $user = $request->user();
+
+        Auth::logout();
+
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return Redirect::to('/');
     }
 }

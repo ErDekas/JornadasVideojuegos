@@ -20,6 +20,10 @@ Route::get('/', [EventController::class, 'index'])->name('home');
 // Eventos
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{id}', [EventController::class, 'show'])->name('events.show');
+Route::get('/events/{id}/register', [EventController::class, 'showRegistrationForm'])->name('events.register');
+Route::post('/events/{id}/register', [EventController::class, 'register'])->name('events.register.submit');
+Route::get('/registration/{id}/success', [EventController::class, 'registrationSuccess'])->name('events.registration.success');
+Route::delete('/registration/{id}', [EventController::class, 'cancelRegistration'])->name('events.registration.cancel');
 
 // Ponentes
 Route::get('/speakers', [SpeakerController::class, 'index'])->name('speakers.index');
@@ -54,8 +58,4 @@ Route::middleware('guest')->group(function () {
         ->name('password.email');
 });
 
-Route::middleware('api.token')->group(function () {
-    Route::post('logout', [LoginController::class, 'logout'])->name('logout');
-});
-
-Route::get('email/verify/{token}', [RegisterController::class, 'verify'])->name('verification.verify');
+require __DIR__.'/auth.php';
