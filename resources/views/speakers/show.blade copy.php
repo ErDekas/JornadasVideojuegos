@@ -10,11 +10,19 @@
         <div class="row mt-4">
             <div class="col-md-8 mx-auto">
                 <h2 class="h4">Biografía</h2>
-                
+                @dd($speaker)
+                <p>{{ $speaker['speaker']['biography']}}</p>
 
                 <h2 class="h4 mt-4">Próximos eventos</h2>
                 <ul class="list-group">
-                   {{ $speaker['speaker']['social_links'] }}
+                    @foreach($speaker['speaker']['upcoming_events'] as $event)
+                        <li class="list-group-item">
+                            <a href="{{ route('events.show', $event['id']) }}">
+                                {{ $event['title'] }}
+                            </a>
+                            <span class="text-muted"> - {{ $event['date'] }}</span>
+                        </li>
+                    @endforeach
                 </ul>
             </div>
         </div>
