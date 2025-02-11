@@ -18,6 +18,7 @@ class EventController extends Controller
     public function index()
     {
         $events = $this->apiService->get('/events');
+        //dd($events);
         return view('events.index', compact('events'));
     }
 
