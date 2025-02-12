@@ -42,7 +42,6 @@ class AuthenticatedSessionController extends Controller
         ]);
     
         try {
-            //die("auth");
             $response = $this->apiService->post('/login', $credentials);
 
             if (!isset($response['token']) || !isset($response['user'])) {
@@ -51,13 +50,12 @@ class AuthenticatedSessionController extends Controller
 
             Session::put('api_token', $response['token']);
             Session::put('user', $response['user']);
-
+            
             $request->session()->regenerate();
 
             return redirect()->intended(route('home', absolute: false));
 
         } catch (\Exception $e) {
-            die("Error" . $e->getMessage());
             return back()->withErrors([
                 'email' => 'Las credenciales proporcionadas son incorrectas.'
             ])->withInput($request->except('password'));
