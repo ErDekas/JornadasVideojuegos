@@ -10,7 +10,7 @@ use App\Http\Controllers\{
 };
 use App\Http\Controllers\Auth\{
     LoginController,
-    RegisteredUserController,
+    RegisterController,
     ForgotPasswordController,
     AuthenticatedSessionController
 };
@@ -87,8 +87,8 @@ Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [LoginController::class, 'login']);
     
-    Route::get('register', [RegisteredUserController::class, 'showRegistrationForm'])->name('register');
-    Route::post('register', [RegisteredUserController::class, 'store'])->name('register');
+    Route::get('register', [RegisterController::class, 'create'])->name('register');
+    Route::post('register', [RegisterController::class, 'store'])->name('register');
     
     Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])
         ->name('password.request');

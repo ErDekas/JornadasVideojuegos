@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Log;
 
-class RegisteredUserController extends Controller
+class RegisterController extends Controller
 {
     protected $apiService;
 
