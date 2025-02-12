@@ -10,7 +10,7 @@ use App\Http\Controllers\{
 };
 use App\Http\Controllers\Auth\{
     LoginController,
-    RegisterController,
+    RegisteredUserController,
     ForgotPasswordController,
     AuthenticatedSessionController
 };
@@ -35,8 +35,7 @@ Route::get('/registration/{id}/success', [EventController::class, 'registrationS
 Route::delete('/registration/{id}', [EventController::class, 'cancelRegistration'])->name('events.registration.cancel');
 
 // Ponentes
-Route::get('/speakers', [SpeakerController::class, 'index'])->name('speakers.index');
-Route::get('/speakers/{id}', [SpeakerController::class, 'show'])->name('speakers.show');
+Route::resource('speakers', SpeakerController::class);
 
 Route::middleware(['web'])->group(function () {
     Route::get('/logout', [AuthenticatedSessionController::class, 'destroy']);
@@ -88,8 +87,8 @@ Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [LoginController::class, 'login']);
     
-    Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-    Route::post('register', [RegisterController::class, 'register']);
+    Route::get('register', [RegisteredUserController::class, 'showRegistrationForm'])->name('register');
+    Route::post('register', [RegisteredUserController::class, 'register']);
     
     Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])
         ->name('password.request');

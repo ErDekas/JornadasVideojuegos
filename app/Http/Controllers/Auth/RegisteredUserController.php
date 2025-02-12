@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RegisterUserRequest;
 use App\Models\User;
 use App\Services\ApiService;
 use Illuminate\Auth\Events\Registered;
@@ -36,22 +37,20 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(RegisterUserRequest $request): RedirectResponse
     {
-        // Validación de los campos del formulario sin la regla unique
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
-
         try {
+            // Los datos ya están validados por el FormRequest
+            $validatedData = $request->validated();
+
             // Enviar los datos del registro a la API
             $apiResponse = $this->apiService->post('/register', [
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => $request->password,
-                'password_confirmation' => $request->password_confirmation
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+                'password' => $validatedData['password'],
+                'password_confirmation' => $validatedData['password_confirmation'],
+                'tipo_inscripcion' => $validatedData['tipo_inscripcion'],
+                'certificado_alumno' => $validatedData['certificado_alumno'] ?? false,
             ]);
 
             // Verificar si la API devuelve un token
@@ -66,7 +65,9 @@ class RegisteredUserController extends Controller
             return redirect(route('home', absolute: false));
 
         } catch (\Exception $e) {
-            die("Error" . $e->getMessage());
+            // Mejorar el manejo de errores para incluir logging
+            var_dump('Error en registro de usuario: ' . $e->getMessage());
+            
             return back()->withErrors([
                 'email' => 'Hubo un problema con la API al registrar al usuario.'
             ])->withInput($request->except('password'));
