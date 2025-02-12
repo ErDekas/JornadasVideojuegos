@@ -28,10 +28,8 @@
                             <a class="nav-link" href="{{ route('profile.show') }}">Mi Perfil</a>
                         </li>
                         <li class="nav-item">
-                            <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn nav-link">Cerrar sesión</button>
-                            </form>
+                            <a class="nav-link" href="{{ url('/logout') }}">Cerrar sesión</a>
+                            
                         </li>
                     @else
                         <li class="nav-item">

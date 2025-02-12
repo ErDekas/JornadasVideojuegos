@@ -20,7 +20,7 @@ class AuthenticatedSessionController extends Controller
     public function __construct(ApiService $apiService)
     {
         $this->apiService = $apiService;
-        $this->middleware('guest')->except('logout');
+        $this->middleware('guest')->except(['logout','destroy']);
     }
 
     /**
