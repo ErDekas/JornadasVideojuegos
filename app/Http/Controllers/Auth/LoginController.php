@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginRequest;
 use App\Services\ApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -17,20 +18,29 @@ class LoginController extends Controller
         $this->middleware('guest')->except('logout');
     }
 
+    /**
+     * Show the login form
+     *
+     * @return \Illuminate\View\View
+     */
     public function showLoginForm()
     {
         return view('auth.login');
     }
 
-    public function login(Request $request)
+    /**
+     * Handle a login request to the application.
+     *
+     * @param  \App\Http\Requests\LoginRequest  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
-
         try {
-            $response = $this->apiService->post('/login', $credentials);
+            $response = $this->apiService->post('/login', [
+                'email' => $request->email,
+                'password' => $request->password
+            ]);
             
             if (!isset($response['token'])) {
                 throw new \Exception('No se recibió un token de la API.');
@@ -49,9 +59,14 @@ class LoginController extends Controller
         }
     }
 
+    /**
+     * Log the user out of the application.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function logout(Request $request)
     {
-        die("he entrado al login");
         if (Session::has('api_token')) {
             try {
                 $this->apiService->post('/auth/logout', [], [
@@ -66,15 +81,19 @@ class LoginController extends Controller
         return redirect()->route('home');
     }
 
-    public function adminLogin(Request $request)
+    /**
+     * Handle an admin login request to the application.
+     *
+     * @param  \App\Http\Requests\LoginRequest  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function adminLogin(LoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
-
         try {
-            $response = $this->apiService->post('/auth/login', $credentials);
+            $response = $this->apiService->post('/auth/login', [
+                'email' => $request->email,
+                'password' => $request->password
+            ]);
 
             if (!isset($response['token'])) {
                 throw new \Exception('No se recibió un token de la API.');
@@ -82,9 +101,7 @@ class LoginController extends Controller
 
             // Verificar si el usuario es administrador
             if (!$response['user']['is_admin']) {
-                return back()->withErrors([
-                    'email' => 'No tienes permisos de administrador.'
-                ]);
+                throw new \Exception('No tienes permisos de administrador.');
             }
 
             Session::put('api_token', $response['token']);
