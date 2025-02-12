@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Payment;
 use App\Models\Registration;
+use App\Http\Controllers\Controller;
 
-class DashboardController extends Controller
+class DashboardAdminController extends Controller
 {
     /**
      * Method to get the statistics

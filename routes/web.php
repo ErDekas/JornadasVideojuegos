@@ -15,7 +15,7 @@ use App\Http\Controllers\Auth\{
 };
 
 use App\Http\Controllers\Admin\{
-    DashboardController,
+    DashboardAdminController,
     AdminEventController,
     AdminSpeakerController,
     AdminAttendeeController,
@@ -61,7 +61,7 @@ Route::middleware('api.token')->group(function () {
 // Rutas del Panel de Administración
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     // Dashboard principal
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', [DashboardAdminController::class, 'index'])->name('dashboard');
     
     // Gestión de Ponentes
     Route::resource('speakers', AdminSpeakerController::class)->except(['show']);
