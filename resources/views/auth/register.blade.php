@@ -45,7 +45,7 @@
                             <option value="">Selecciona un tipo</option>
                             <option value="presential" {{ old('tipo_inscripcion') == 'presential' ? 'selected' : '' }}>Presencial</option>
                             <option value="virtual" {{ old('tipo_inscripcion') == 'virtual' ? 'selected' : '' }}>Virtual</option>
-                            <option value="free" {{ old('tipo_inscripcion') == 'free' ? 'selected' : '' }}>Gratuita</option>
+                            <option value="student" {{ old('tipo_inscripcion') == 'student' ? 'selected' : '' }}>Estudiante</option>
                         </select>
                         @error('tipo_inscripcion')
                         <div class="invalid-feedback">{{ $message }}</div>
