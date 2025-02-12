@@ -32,7 +32,11 @@ class LoginController extends Controller
         try {
             $response = $this->apiService->post('/auth/login', $credentials);
             
-            // Almacenar el token en la sesión
+            if (!isset($response['token'])) {
+                throw new \Exception('No se recibió un token de la API.');
+            }
+
+            // Guardar en sesión
             Session::put('api_token', $response['token']);
             Session::put('user', $response['user']);
 
@@ -40,7 +44,7 @@ class LoginController extends Controller
                            ->with('success', '¡Bienvenido/a!');
         } catch (\Exception $e) {
             return back()->withErrors([
-                'email' => 'Las credenciales proporcionadas son incorrectas.'
+                'email' => $e->getMessage() ?: 'Las credenciales proporcionadas son incorrectas.'
             ])->withInput($request->except('password'));
         }
     }
@@ -49,13 +53,48 @@ class LoginController extends Controller
     {
         if (Session::has('api_token')) {
             try {
-                $this->apiService->post('/auth/logout');
+                $this->apiService->post('/auth/logout', [], [
+                    'Authorization' => 'Bearer ' . Session::get('api_token')
+                ]);
             } catch (\Exception $e) {
-                // Continuar con el logout aunque falle la API
+                // Ignorar errores de la API y continuar con el logout local
             }
         }
 
         Session::forget(['api_token', 'user']);
         return redirect()->route('home');
+    }
+
+    public function adminLogin(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        try {
+            $response = $this->apiService->post('/auth/login', $credentials);
+
+            if (!isset($response['token'])) {
+                throw new \Exception('No se recibió un token de la API.');
+            }
+
+            // Verificar si el usuario es administrador
+            if (!$response['user']['is_admin']) {
+                return back()->withErrors([
+                    'email' => 'No tienes permisos de administrador.'
+                ]);
+            }
+
+            Session::put('api_token', $response['token']);
+            Session::put('user', $response['user']);
+
+            return redirect()->intended(route('admin'))
+                           ->with('success', '¡Bienvenido admin!');
+        } catch (\Exception $e) {
+            return back()->withErrors([
+                'email' => $e->getMessage() ?: 'Las credenciales proporcionadas son incorrectas.'
+            ])->withInput($request->except('password'));
+        }
     }
 }

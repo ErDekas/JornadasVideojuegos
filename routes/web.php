@@ -14,6 +14,14 @@ use App\Http\Controllers\Auth\{
     ForgotPasswordController
 };
 
+use App\Http\Controllers\Admin\{
+    DashboardController,
+    AdminEventController,
+    AdminSpeakerController,
+    AdminAttendeeController,
+    AdminPaymentController
+};
+
 // Rutas públicas
 Route::get('/', [EventController::class, 'index'])->name('home');
 
@@ -48,6 +56,26 @@ Route::middleware('api.token')->group(function () {
     // Perfil
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+});
+
+// Rutas del Panel de Administración
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    // Dashboard principal
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Gestión de Ponentes
+    Route::resource('speakers', AdminSpeakerController::class)->except(['show']);
+    
+    // Gestión de Eventos
+    Route::resource('events', AdminEventController::class)->except(['show']);
+    
+    // Gestión de Asistentes
+    Route::get('attendees', [AdminAttendeeController::class, 'index'])->name('attendees.index');
+    Route::delete('attendees/{id}', [AdminAttendeeController::class, 'destroy'])->name('attendees.destroy');
+    
+    // Gestión de Ingresos/Pagos
+    Route::get('payments', [AdminPaymentController::class, 'index'])->name('payments.index');
+    Route::get('payments/export', [AdminPaymentController::class, 'export'])->name('payments.export');
 });
 
 // Rutas de Autenticación
