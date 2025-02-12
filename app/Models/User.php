@@ -13,7 +13,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role', // 'student', 'regular', 'admin'
+        'password_confirmation',
         'registration_type', // 'virtual', 'presential', 'free'
         'is_verified',
     ];

@@ -41,21 +41,21 @@ class RegisterController extends Controller
     try {
         $validatedData = $request->validated();
 
-        dd([
+        /*dd([
             'datos_recibidos' => $request->all(),
             'datos_validados' => $validatedData
-        ]);
+        ]);*/
         
         // Crear el usuario localmente
-        $user = User::create([
+        /*$user = User::create([
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
             'password' => Hash::make($validatedData['password']),
             'registration_type' => $validatedData['tipo_inscripcion'],
             'role' => 'student', // Asumiendo rol por defecto
             'is_verified' => $validatedData['certificado_alumno'] ?? false,
-        ]);
-
+        ]);*/
+        //dd($validatedData);
         // Enviar a la API
         $apiResponse = $this->apiService->post('/register', [
             'name' => $validatedData['name'],
@@ -72,11 +72,12 @@ class RegisterController extends Controller
         }
 
         Session::put('api_token', $apiResponse['token']);
-        Auth::login($user);
+        //Auth::login($user);
 
         return redirect()->route('home')->with('success', 'Registro exitoso.');
 
     } catch (\Exception $e) {
+        die("error" . $e ->getMessage());
         Log::error('Error en registro de usuario', [
             'error' => $e->getMessage(),
             'email' => $validatedData['email'] ?? null
