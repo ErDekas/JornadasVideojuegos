@@ -36,25 +36,28 @@ class LoginController extends Controller
      */
     public function login(LoginRequest $request)
     {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+    
         try {
-            $response = $this->apiService->post('/login', [
-                'email' => $request->email,
-                'password' => $request->password
-            ]);
-            
-            if (!isset($response['token'])) {
-                throw new \Exception('No se recibió un token de la API.');
+            $response = $this->apiService->post('/login', $credentials);
+
+            if (!isset($response['token']) || !isset($response['user'])) {
+                throw new \Exception('Error al obtener los datos de usuario.');
             }
 
-            // Guardar en sesión
             Session::put('api_token', $response['token']);
             Session::put('user', $response['user']);
+            
+            $request->session()->regenerate();
 
-            return redirect()->intended(route('home'))
-                           ->with('success', '¡Bienvenido/a!');
+            return redirect()->intended(route('home', absolute: false));
+
         } catch (\Exception $e) {
             return back()->withErrors([
-                'email' => $e->getMessage() ?: 'Las credenciales proporcionadas son incorrectas.'
+                'email' => 'Las credenciales proporcionadas son incorrectas.'
             ])->withInput($request->except('password'));
         }
     }
