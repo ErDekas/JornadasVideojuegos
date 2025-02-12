@@ -30,7 +30,7 @@ class LoginController extends Controller
         ]);
 
         try {
-            $response = $this->apiService->post('/auth/login', $credentials);
+            $response = $this->apiService->post('/login', $credentials);
             
             // Almacenar el token en la sesión
             Session::put('api_token', $response['token']);
@@ -47,6 +47,7 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        die("he entrado al login");
         if (Session::has('api_token')) {
             try {
                 $this->apiService->post('/auth/logout');

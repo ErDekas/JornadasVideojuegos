@@ -43,7 +43,7 @@ class EventController extends Controller
         $userRegistrations = $this->apiService->get("/users/registrations");
         
         if ($event['type'] === 'conference' && $userRegistrations['conference_count'] >= 5) {
-            return back()->with('error', 'Has alcanzado el límite de conferencias permitidas');
+            return back()->with('error', 'Se ha alcanzado el limite de conferencias');
         }
         
         if ($event['type'] === 'workshop' && $userRegistrations['workshop_count'] >= 4) {

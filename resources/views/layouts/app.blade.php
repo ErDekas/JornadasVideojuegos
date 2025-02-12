@@ -23,7 +23,7 @@
                     </li>
                 </ul>
                 <ul class="navbar-nav">
-                    @auth
+                    @if(Session::has('user'))
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('profile.show') }}">Mi Perfil</a>
                         </li>
@@ -40,7 +40,7 @@
                         <li class="nav-item">
                             <a class="btn btn-primary ms-2" href="{{ route('register') }}">Registrarse</a>
                         </li>
-                    @endauth
+                    @endif
                 </ul>
             </div>
         </div>
