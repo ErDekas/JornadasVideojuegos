@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Models\Payment;
 use App\Models\Registration;
 
-class DashboardController extends Controller
+class AdminController extends Controller
 {
     /**
      * Method to get the statistics

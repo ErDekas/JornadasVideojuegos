@@ -11,11 +11,12 @@ use App\Http\Controllers\{
 use App\Http\Controllers\Auth\{
     LoginController,
     RegisterController,
-    ForgotPasswordController
+    ForgotPasswordController,
+    AuthenticatedSessionController
 };
 
 use App\Http\Controllers\Admin\{
-    DashboardController,
+    AdminController,
     AdminEventController,
     AdminSpeakerController,
     AdminAttendeeController,
@@ -36,6 +37,10 @@ Route::delete('/registration/{id}', [EventController::class, 'cancelRegistration
 // Ponentes
 Route::get('/speakers', [SpeakerController::class, 'index'])->name('speakers.index');
 Route::get('/speakers/{id}', [SpeakerController::class, 'show'])->name('speakers.show');
+
+Route::middleware(['web'])->group(function () {
+    Route::get('/logout', [AuthenticatedSessionController::class, 'destroy']);
+});
 
 // Rutas protegidas
 Route::middleware('api.token')->group(function () {
@@ -61,7 +66,7 @@ Route::middleware('api.token')->group(function () {
 // Rutas del Panel de Administración
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     // Dashboard principal
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', [AdminController::class, 'index'])->name('dashboard');
     
     // Gestión de Ponentes
     Route::resource('speakers', AdminSpeakerController::class)->except(['show']);
