@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\admin;
 
 use Illuminate\Http\Request;
 use App\Models\Payment;
+use App\Http\Controllers\Controller;
+
 
 class AdminPaymentController extends Controller
 {
