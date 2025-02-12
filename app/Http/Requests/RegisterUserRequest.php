@@ -13,11 +13,12 @@ class RegisterUserRequest extends FormRequest
 
     public function rules()
     {
+        // dd($this->all());        
         return [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:8|confirmed',
-            'tipo_inscripcion' => 'required|in:virtual,presential,free', // Estos valores deben coincidir con registration_type
+            'password' => 'required|min:6|confirmed',
+            'tipo_inscripcion' => 'required|in:virtual,presential,student', // Estos valores deben coincidir con registration_type
             'certificado_alumno' => 'required_if:tipo_inscripcion,free|boolean'
         ];
     }
