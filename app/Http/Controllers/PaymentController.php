@@ -30,38 +30,46 @@ class PaymentController extends Controller
         return redirect()->route('registration.success', $payment['registration_id']);
     }
 
-    public function createPayment(){
+    public function createPayment($price){
         $provider = new PayPalClient;
         $provider->setApiCredentials(config('paypal'));
-        $paypalToken = $provider->getAccessToken();
-
-        $response = $provider->createOrder([
-            "intent" => "CAPTURE",
-            "purchase_units" => [
-                [
-                    "amount" => [
-                        "currency_code" => "USD",
-                        // Poner el precio que sea
-                        "value" => "10.00"
-                    ]
-                ]
-            ],
-            "application_context" => [
-                "cancel_url" => url('/paypal/cancel'),
-                "return_url" => url('/paypal/success')
-            ]
-        ]);
     
-        if (isset($response['id']) && $response['id'] != null) {
-            foreach ($response['links'] as $link) {
-                if ($link['rel'] === 'approve') {
-                    return redirect()->away($link['href']);
+        try {
+            $paypalToken = $provider->getAccessToken();
+            if (!$paypalToken) {
+                return redirect()->route('paypal.cancel')->with('error', 'No se pudo obtener el token de PayPal.');
+            }
+    
+            $response = $provider->createOrder([
+                "intent" => "CAPTURE",
+                "purchase_units" => [
+                    [
+                        "amount" => [
+                            "currency_code" => "EUR",
+                            "value" => $price
+                        ]
+                    ]
+                ],
+                "application_context" => [
+                    "cancel_url" => url('/paypal/cancel'),
+                    "return_url" => url('/paypal/success')
+                ]
+            ]);
+    
+            if (isset($response['id']) && $response['id'] != null) {
+                foreach ($response['links'] as $link) {
+                    if ($link['rel'] === 'approve') {
+                        return redirect()->away($link['href']);
+                    }
                 }
             }
-        } else {
-            return redirect()->route('paypal.cancel');
+    
+            return redirect()->route('paypal.cancel')->with('error', 'No se pudo procesar el pago.');
+        } catch (\Exception $e) {
+            return redirect()->route('paypal.cancel')->with('error', 'Error al conectar con PayPal.');
         }
     }
+    
 
     public function capturePayment(Request $request)
     {
@@ -69,12 +77,21 @@ class PaymentController extends Controller
         $provider->setApiCredentials(config('paypal'));
         $provider->getAccessToken();
 
-        $response = $provider->capturePaymentOrder($request->query('token'));
+        $paypalToken = $request->query('token');
+        if (!$paypalToken) {
+            return redirect()->route('paypal.cancel')->with('error', 'Token inválido.');
+        }
 
-        if (isset($response['status']) && $response['status'] == 'COMPLETED') {
-            return "Pago exitoso. ID de transacción: " . $response['id'];
-        } else {
-            return "El pago no se completó.";
+        try {
+            $response = $provider->capturePaymentOrder($paypalToken);
+    
+            if (isset($response['status']) && $response['status'] == 'COMPLETED') {
+                return redirect()->route('home')->with('success', 'Pago exitoso.');
+            } else {
+                return redirect()->route('paypal.cancel')->with('error', 'El pago no se completó.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('paypal.cancel')->with('error', 'Error al procesar el pago.');
         }
     }
 }
