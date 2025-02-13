@@ -5,7 +5,7 @@
         <div class="card">
             <div class="card-body">
                 <h1 class="card-title">Registro</h1>
-                <form method="POST" action="{{ route('register') }}">
+                <form action="{{ route('register') }} " method="POST">
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Nombre</label>
