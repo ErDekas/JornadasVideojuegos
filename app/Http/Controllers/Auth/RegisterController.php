@@ -44,7 +44,14 @@ class RegisterController extends Controller
         try {
             $validatedData = $request->validated();
 
-            // Enviar a la API para registrar al usuario
+            if ($validatedData['tipo_inscripcion'] === 'student' && 
+                !str_ends_with($validatedData['email'], '@ayala.com')) {
+                    return back()
+                        ->withErrors(['email' => 'El correo no corresponde con un correo válido de un estudiante'])
+                        ->withInput();
+            }
+
+            // Enviar a la API
             $apiResponse = $this->apiService->post('/register', [
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
@@ -52,7 +59,6 @@ class RegisterController extends Controller
                 'password_confirmation' => $validatedData['password_confirmation'],
                 'registration_type' => $validatedData['tipo_inscripcion'],
                 'is_verified' => $validatedData['certificado_alumno'] ?? false,
-                'role' => 'student'
             ]);
 
             // Verificar la respuesta de la API
@@ -97,7 +103,7 @@ class RegisterController extends Controller
 
             return back()
                 ->withErrors(['error' => 'Hubo un problema al procesar tu registro. Por favor, intenta nuevamente.'])
-                ->withInput($request->except('password', 'password_confirmation'));
+                ->withInput($request->except(['password', 'password_confirmation']));
         }
     }
 }
