@@ -36,13 +36,11 @@ class LoginController extends Controller
      */
     public function login(LoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
-    
         try {
-            $response = $this->apiService->post('/login', $credentials);
+            $response = $this->apiService->post('/login', [
+                'email' => $request->email,
+                'password' => $request->password
+            ]);
 
             if (!isset($response['token']) || !isset($response['user'])) {
                 throw new \Exception('Error al obtener los datos de usuario.');
