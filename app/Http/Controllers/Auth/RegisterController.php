@@ -37,55 +37,44 @@ class RegisterController extends Controller
      * @return RedirectResponse
      */
     public function store(RegisterUserRequest $request): RedirectResponse
-{
-    try {
-        $validatedData = $request->validated();
+    {
+        try {
+            $validatedData = $request->validated();
 
-        /*dd([
-            'datos_recibidos' => $request->all(),
-            'datos_validados' => $validatedData
-        ]);*/
-        
-        // Crear el usuario localmente
-        /*$user = User::create([
-            'name' => $validatedData['name'],
-            'email' => $validatedData['email'],
-            'password' => Hash::make($validatedData['password']),
-            'registration_type' => $validatedData['tipo_inscripcion'],
-            'role' => 'student', // Asumiendo rol por defecto
-            'is_verified' => $validatedData['certificado_alumno'] ?? false,
-        ]);*/
-        //dd($validatedData);
-        // Enviar a la API
-        $apiResponse = $this->apiService->post('/register', [
-            'name' => $validatedData['name'],
-            'email' => $validatedData['email'],
-            'password' => $validatedData['password'],
-            'password_confirmation' => $validatedData['password_confirmation'],
-            'registration_type' => $validatedData['tipo_inscripcion'],
-            'is_verified' => $validatedData['certificado_alumno'] ?? false,
-            'role' => 'student'
-        ]);
+            if ($validatedData['tipo_inscripcion'] === 'student' && 
+                !str_ends_with($validatedData['email'], '@ayala.com')) {
+                    return back()
+                        ->withErrors(['email' => 'El correo no corresponde con un correo valido de un estudiante'])
+                        ->withInput();
+            }
 
-        if (!isset($apiResponse['token'])) {
-            throw new \Exception('No se recibió token de autenticación de la API.');
+            // Enviar a la API
+            $apiResponse = $this->apiService->post('/register', [
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+                'password' => $validatedData['password'],
+                'password_confirmation' => $validatedData['password_confirmation'],
+                'registration_type' => $validatedData['tipo_inscripcion'],
+                'is_verified' => $validatedData['certificado_alumno'] ?? false,
+            ]);
+
+            if (!isset($apiResponse['token'])) {
+                throw new \Exception('No se recibió token de autenticación de la API.');
+            }
+
+            Session::put('api_token', $apiResponse['token']);
+
+            return redirect()->route('home')->with('success', 'Registro exitoso.');
+
+        } catch (\Exception $e) {
+            Log::error('Error en registro de usuario', [
+                'error' => $e->getMessage(),
+                'email' => $validatedData['email'] ?? null
+            ]);
+
+            return back()
+                ->withErrors(['error' => 'Hubo un problema al procesar tu registro. Por favor, intenta nuevamente.'])
+                ->withInput($request->except('password', 'password_confirmation'));
         }
-
-        Session::put('api_token', $apiResponse['token']);
-        //Auth::login($user);
-
-        return redirect()->route('home')->with('success', 'Registro exitoso.');
-
-    } catch (\Exception $e) {
-        die("error" . $e ->getMessage());
-        Log::error('Error en registro de usuario', [
-            'error' => $e->getMessage(),
-            'email' => $validatedData['email'] ?? null
-        ]);
-
-        return back()
-            ->withErrors(['error' => 'Hubo un problema al procesar tu registro. Por favor, intenta nuevamente.'])
-            ->withInput($request->except('password', 'password_confirmation'));
     }
-}
 }

@@ -147,51 +147,6 @@ class EventController extends Controller
         return view('events.register', compact('event'));
     }
 
-    /**
-     * Register user for multiple events.
-     *
-     * @param  \App\Http\Requests\SeleccionEventsRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function registerEvents(SeleccionEventsRequest $request)
-    {
-        try {
-            // Procesar conferencias seleccionadas
-            if ($request->has('conferencias')) {
-                foreach ($request->conferencias as $eventId) {
-                    $response = $this->apiService->post("/events/{$eventId}/store", [
-                        'type' => 'conference',
-                        'is_student' => true, // Ajusta según tus necesidades
-                    ]);
-
-                    if (!$response['success']) {
-                        throw new \Exception('Error al registrar conferencia');
-                    }
-                }
-            }
-
-            // Procesar talleres seleccionados
-            if ($request->has('talleres')) {
-                foreach ($request->talleres as $eventId) {
-                    $response = $this->apiService->post("/events/{$eventId}/store", [
-                        'type' => 'workshop',
-                        'is_student' => true, // Ajusta según tus necesidades
-                    ]);
-
-                    if (!$response['success']) {
-                        throw new \Exception('Error al registrar taller');
-                    }
-                }
-            }
-
-            return redirect()->route('events.registration.success')
-                           ->with('success', 'Eventos registrados exitosamente');
-
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al registrar los eventos: ' . $e->getMessage())
-                        ->withInput();
-        }
-    }
 
     /**
      * Register user for a single event.
@@ -202,12 +157,8 @@ class EventController extends Controller
      */
     public function register($id, Request $request)
     {
-        $request->validate([
-            'type' => 'required|in:presential,virtual,free',
-            'is_student' => 'required|boolean',
-        ]);
-
         $event = $this->apiService->get("/events/{$id}");
+        // Esta ruta hay que cambiarla
         $userRegistrations = $this->apiService->get("/users/registrations");
         
         if ($event['type'] === 'conference' && $userRegistrations['conference_count'] >= 5) {
@@ -218,16 +169,19 @@ class EventController extends Controller
             return back()->with('error', 'Has alcanzado el límite de talleres permitidos');
         }
 
+        // Creo que es el evento de guardar el registro del usuario a un evento
+        // hay que cambiarlo por la ruta correcta con los parametrod correctos
         $response = $this->apiService->post("/events/{$id}/store", [
             'type' => $request->type,
             'is_student' => $request->is_student,
         ]);
 
         if ($response['success']) {
+            // cambiarlo por el tipo de registro del usuario
             if ($request->type !== 'free') {
                 return redirect()->route('payment.process', ['registration_id' => $response['registration_id']]);
             }
-            
+            // Creo que hay que cambiarlo
             return redirect()->route('events.registration.success', ['id' => $response['registration_id']])
                            ->with('success', 'Registro completado con éxito');
         }
