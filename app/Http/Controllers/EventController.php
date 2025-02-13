@@ -14,7 +14,7 @@ class EventController extends Controller
     public function __construct(ApiService $apiService)
     {
         $this->apiService = $apiService;
-        $this->middleware('api.token')->except(['index', 'show']);
+        $this->middleware(\App\Http\Middleware\CheckApiToken::class)->except(['index', 'show']);
     }
 
     /**

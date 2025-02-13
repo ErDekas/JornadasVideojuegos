@@ -4,8 +4,8 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-body">
-                <h1 class="card-title">Registro para {{ $event->title }}</h1>
-                <form action="{{ route('events.register.submit', $event->id) }}" method="POST">
+                <h1 class="card-title">Registro para {{ $event['event']['title'] }}</h1>
+                <form action="{{ route('events.register.submit', $event['event']['id']) }}" method="POST">
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Nombre</label>

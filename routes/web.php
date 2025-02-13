@@ -42,7 +42,7 @@ Route::middleware(['web'])->group(function () {
 });
 
 // Rutas protegidas
-Route::middleware('api.token')->group(function () {
+Route::middleware(\App\Http\Middleware\CheckApiToken::class)->group(function () {
     // Registro a eventos
     Route::get('/register', [RegistrationController::class, 'create'])->name('registration.create');
     Route::post('/register', [RegistrationController::class, 'store'])->name('registration.store');
