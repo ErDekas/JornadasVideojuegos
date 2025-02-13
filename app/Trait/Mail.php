@@ -46,7 +46,7 @@ trait Mail
     public function sendConfirmationEmail(string $email, string $nombre, string $token): bool {
         $this->initializeMailer();
         try {
-            $confirmUrl = env('APP_URL') . "usuarios/confirmarCuenta?token=" . $token;
+            $confirmUrl = route('verification.verify', ['token' => $token]);
 
             // Añadir destinatario
             $this->mailer->addAddress($email, $nombre);

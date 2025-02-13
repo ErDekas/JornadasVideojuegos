@@ -6,7 +6,8 @@ use App\Http\Controllers\{
     SpeakerController,
     RegistrationController,
     PaymentController,
-    ProfileController
+    ProfileController,
+    EmailVerificationController
 };
 use App\Http\Controllers\Auth\{
     LoginController,
@@ -95,5 +96,9 @@ Route::middleware('guest')->group(function () {
     Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])
         ->name('password.email');
 });
+
+Route::get('email/verify/{token}', [EmailVerificationController::class, 'verify'])
+    ->name('verification.verify')
+    ->middleware('guest');
 
 require __DIR__.'/auth.php';
