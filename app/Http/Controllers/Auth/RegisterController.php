@@ -12,14 +12,17 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Session;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Log;
+use App\Trait\Mail;
 
 class RegisterController extends Controller
 {
+    use Mail;
     protected $apiService;
 
     public function __construct(ApiService $apiService)
     {
         $this->apiService = $apiService;
+        $this->initializeMailer();
     }
 
     /**
@@ -44,7 +47,7 @@ class RegisterController extends Controller
             if ($validatedData['tipo_inscripcion'] === 'student' && 
                 !str_ends_with($validatedData['email'], '@ayala.com')) {
                     return back()
-                        ->withErrors(['email' => 'El correo no corresponde con un correo valido de un estudiante'])
+                        ->withErrors(['email' => 'El correo no corresponde con un correo válido de un estudiante'])
                         ->withInput();
             }
 
@@ -62,19 +65,24 @@ class RegisterController extends Controller
                 throw new \Exception('No se recibió token de autenticación de la API.');
             }
 
+            // Guardar el token en la sesión
             Session::put('api_token', $apiResponse['token']);
 
-            return redirect()->route('home')->with('success', 'Registro exitoso.');
+            // Enviar correo de confirmación
+            $this->sendConfirmationEmail($validatedData['email'], $validatedData['name'], $apiResponse['token']);
+
+            // Redirigir con mensaje de éxito
+            return redirect()->route('home')->with('success', 'Registro exitoso. Por favor, revisa tu correo para confirmar tu cuenta.');
 
         } catch (\Exception $e) {
             Log::error('Error en registro de usuario', [
                 'error' => $e->getMessage(),
-                'email' => $validatedData['email'] ?? null
+                'email' => $validatedData['email'] ?? 'No disponible'
             ]);
 
             return back()
                 ->withErrors(['error' => 'Hubo un problema al procesar tu registro. Por favor, intenta nuevamente.'])
-                ->withInput($request->except('password', 'password_confirmation'));
+                ->withInput($request->except(['password', 'password_confirmation']));
         }
     }
 }
