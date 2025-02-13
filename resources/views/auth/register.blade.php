@@ -79,7 +79,7 @@
         const certificadoContainer = document.querySelector('#certificadoAlumnoContainer');
 
         function toggleCertificadoAlumno() {
-            if (tipoInscripcion.value === 'free') { // Cambiado de 'gratuita' a 'free'
+            if (tipoInscripcion.value === 'student') { // Cambiado de 'gratuita' a 'free'
                 certificadoContainer.style.display = 'block';
             } else {
                 certificadoContainer.style.display = 'none';
