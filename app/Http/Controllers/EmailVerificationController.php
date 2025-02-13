@@ -19,7 +19,7 @@ class EmailVerificationController extends Controller
     public function verify($token)
     {
         try {
-            $response = $this->apiService->post('/v1/verify-email', [
+            $response = $this->apiService->post('/verify-email', [
                 'token' => $token
             ]);
 
