@@ -11,48 +11,41 @@ trait Mail
 
     public function __construct() {
         $this->mailer = new PHPMailer(true);
-
-        // Configuración de SMTP
-        $this->mailer->isSMTP();
-        $this->mailer->Host = env('SMTP_HOST'); // Usando configuración .env
-        $this->mailer->SMTPAuth = true;
-        $this->mailer->Username = env('SMTP_USERNAME');
-        $this->mailer->Password = env('SMTP_PASSWORD');
-        $this->mailer->SMTPSecure = env('SMTP_SECURE');
-        $this->mailer->Port = env('SMTP_PORT', 587); // Puerto predeterminado 587
-        
-        $this->mailer->setFrom(env('SMTP_USERNAME'), "Tu Empresa"); // Remitente
-        $this->mailer->isHTML(true);
+        $this->configureMailer();
     }
 
     protected function initializeMailer() {
         if (!isset($this->mailer)) {
             $this->mailer = new PHPMailer(true);
-
-            // Configuración de SMTP
-            $this->mailer->isSMTP();
-            $this->mailer->Host = env('SMTP_HOST');
-            $this->mailer->SMTPAuth = true;
-            $this->mailer->Username = env('SMTP_USERNAME');
-            $this->mailer->Password = env('SMTP_PASSWORD');
-            $this->mailer->SMTPSecure = env('SMTPSECURE');
-            $this->mailer->Port = env('SMTP_PORT', 587);
-            
-            $this->mailer->setFrom(env('SMTP_USERNAME'), "Tu Empresa");
-            $this->mailer->isHTML(true);
+            $this->configureMailer();
         }
+    }
+
+    private function configureMailer() {
+        $this->mailer->isSMTP();
+        $this->mailer->Host = env('SMTP_HOST');
+        $this->mailer->SMTPAuth = true;
+        $this->mailer->Username = env('SMTP_USERNAME');
+        $this->mailer->Password = env('SMTP_PASSWORD');
+        $this->mailer->SMTPSecure = env('SMTP_SECURE');
+        $this->mailer->Port = env('SMTP_PORT', 587);
+        
+        $this->mailer->setFrom(env('SMTP_USERNAME'), env('MAIL_FROM_NAME', 'Tu Empresa'));
+        $this->mailer->isHTML(true);
     }
 
     public function sendConfirmationEmail(string $email, string $nombre, string $token): bool {
         $this->initializeMailer();
         try {
-            $confirmUrl = route('verification.verify', ['token' => $token]);
+            // Generar URL de verificación incluyendo el email como query parameter
+            $confirmUrl = route('verification.verify', [
+                'token' => $token,
+                'email' => $email
+            ]);
 
-            // Añadir destinatario
             $this->mailer->addAddress($email, $nombre);
             $this->mailer->Subject = 'Confirma tu cuenta';
 
-            // Crear contenido del correo en HTML
             $content = "
                 <!DOCTYPE html>
 <html lang='es'>
@@ -84,7 +77,7 @@ trait Mail
                     </tr>
                     <tr>
                         <td style='padding: 10px; text-align: center; background-color: #f1f1f1; font-size: 12px; color: #888;'>
-                            <p style='margin: 0;'>© 2025 Tu Empresa. Todos los derechos reservados.</p>
+                            <p style='margin: 0;'>© " . date('Y') . " " . env('APP_NAME', 'Tu Empresa') . ". Todos los derechos reservados.</p>
                         </td>
                     </tr>
                 </table>
