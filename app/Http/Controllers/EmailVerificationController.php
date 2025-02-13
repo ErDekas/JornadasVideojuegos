@@ -19,8 +19,16 @@ class EmailVerificationController extends Controller
     public function verify(Request $request, $token)
     {
         try {
-            $response = $this->apiService->post('/v1/verify-email', [
-                'token' => $token
+            // Obtener el email del query string
+            $email = $request->query('email');
+
+            if (!$email) {
+                throw new \Exception('El email es requerido para la verificación');
+            }
+
+            // Llamar a la API para verificar el email
+            $response = $this->apiService->post('/verify-email', [
+                'email' => $email
             ]);
 
             return view('auth.verify-email', [

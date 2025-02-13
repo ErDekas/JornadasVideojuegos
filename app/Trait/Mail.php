@@ -30,7 +30,7 @@ trait Mail
         $this->mailer->SMTPSecure = env('SMTP_SECURE');
         $this->mailer->Port = env('SMTP_PORT', 587);
         
-        $this->mailer->setFrom(env('SMTP_USERNAME'), env('MAIL_FROM_NAME', 'Tu Empresa'));
+        $this->mailer->setFrom(env('SMTP_USERNAME'), env('MAIL_FROM_NAME', 'Jornadas Videojuegos IES Francisco Ayala'));
         $this->mailer->isHTML(true);
     }
 
