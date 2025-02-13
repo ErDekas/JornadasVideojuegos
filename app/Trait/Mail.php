@@ -18,7 +18,7 @@ trait Mail
         $this->mailer->SMTPAuth = true;
         $this->mailer->Username = env('SMTP_USERNAME');
         $this->mailer->Password = env('SMTP_PASSWORD');
-        $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $this->mailer->SMTPSecure = env('SMTP_SECURE');
         $this->mailer->Port = env('SMTP_PORT', 587); // Puerto predeterminado 587
         
         $this->mailer->setFrom(env('SMTP_USERNAME'), "Tu Empresa"); // Remitente
@@ -35,7 +35,7 @@ trait Mail
             $this->mailer->SMTPAuth = true;
             $this->mailer->Username = env('SMTP_USERNAME');
             $this->mailer->Password = env('SMTP_PASSWORD');
-            $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $this->mailer->SMTPSecure = env('SMTP_SECURE');
             $this->mailer->Port = env('SMTP_PORT', 587);
             
             $this->mailer->setFrom(env('SMTP_USERNAME'), "Tu Empresa");
