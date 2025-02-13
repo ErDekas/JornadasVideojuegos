@@ -36,9 +36,9 @@ trait Mail
             $this->mailer->Username = env('SMTP_USERNAME');
             $this->mailer->Password = env('SMTP_PASSWORD');
             $this->mailer->SMTPSecure = env('SMTPSECURE');
-            $this->mailer->Port = env('SMTP_PORT');
+            $this->mailer->Port = env('SMTP_PORT', 587);
             
-            $this->mailer->setFrom(env('SMTP_USERNAME'), "Jornadas Videojuegos");
+            $this->mailer->setFrom(env('SMTP_USERNAME'), "Tu Empresa");
             $this->mailer->isHTML(true);
         }
     }
