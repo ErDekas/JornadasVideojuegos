@@ -12,8 +12,9 @@ use App\Http\Controllers\{
 use App\Http\Controllers\Auth\{
     LoginController,
     RegisterController,
-    ForgotPasswordController,
-    AuthenticatedSessionController
+    PasswordResetLinkController,
+    AuthenticatedSessionController,
+    NewPasswordController
 };
 
 use App\Http\Controllers\Admin\{
@@ -91,14 +92,36 @@ Route::middleware('guest')->group(function () {
     Route::get('register', [RegisterController::class, 'create'])->name('register');
     Route::post('register', [RegisterController::class, 'store'])->name('register');
     
-    Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])
-        ->name('password.request');
-    Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])
-        ->name('password.email');
+    // Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])
+    //     ->name('password.request');
+    // Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+    //     ->name('password.email');
 });
 
 Route::get('email/verify/{token}', [EmailVerificationController::class, 'verify'])
     ->name('verification.verify')
     ->middleware('guest');
+
+// Ruta de la vista para el formulario de "Olvidé mi contraseña"
+Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])
+    ->middleware('guest')
+    ->name('password.request');
+
+// Ruta para manejar la solicitud de enlace de restablecimiento
+Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
+    ->middleware('guest')
+    ->name('password.email');
+
+// Ruta para el formulario de restablecimiento de la contraseña
+Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])
+    ->middleware('guest')
+    ->name('password.reset');
+
+// Ruta para procesar la actualización de la contraseña
+Route::post('/reset-password', [NewPasswordController::class, 'store'])
+    ->middleware('guest')
+    ->name('password.update');
+
+
 
 require __DIR__.'/auth.php';
