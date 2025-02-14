@@ -22,7 +22,7 @@
                     <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
                 </form>
                 <div class="text-center mt-3">
-                    <a href="{{ route('password.reset') }}">¿Olvidaste tu contraseña?</a>
+                    <a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a>
                 </div>
             </div>
         </div>

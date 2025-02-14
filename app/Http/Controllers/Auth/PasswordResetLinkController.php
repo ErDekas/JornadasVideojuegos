@@ -41,22 +41,20 @@ class PasswordResetLinkController extends Controller
         $request->validate([
             'email' => ['required', 'email'],
         ]);
-
         try {
             // Log the request for debugging
             Log::info('Initiating password reset request for email: ' . $request->email);
+            
             // Make the API request
             $apiResponse = $this->apiService->post('/password/forgot', [
                 'email' => $request->email
             ]);
-
+            
             Log::info('API Response:', ['response' => $apiResponse]);
-
             // Check for API success
             if (isset($apiResponse['success']) && $apiResponse['success'] === true) {
                 return back()->with('status', 'Se ha enviado un enlace para restablecer la contraseña a tu correo electrónico.');
             }
-
             // Handle specific API error messages
             $errorMessage = $apiResponse['message'] ?? 'Hubo un error al procesar la solicitud.';
             Log::error('API Error:', ['message' => $errorMessage]);
@@ -66,7 +64,7 @@ class PasswordResetLinkController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            dd($e->getMessage(), $e->getTrace());
+            //dd($e->getMessage(), $e->getTrace());
             Log::error('Password reset request failed:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
