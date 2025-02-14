@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Services\ApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Exception;
 
 class LoginController extends Controller
 {
@@ -48,6 +49,36 @@ class LoginController extends Controller
 
             Session::put('api_token', $response['token']);
             Session::put('user', $response['user']);
+            if ($response['user']['is_first_login'] === 1) {
+                
+                try{
+                    //die("try");
+                    $this->apiService->put("/user/updateFirstLogin/{$response['user']['id']}", [
+                        'is_first_login' => false
+                    ]);
+                }
+                catch(Exception $e){
+                    die($e->getMessage());
+                }
+            
+                $response['user']['is_first_login'] = false;  
+                Session::put('user', $response['user']);
+                $price = null;
+                switch($response['user']['registration_type']) {
+                    case 'student':
+                        return redirect()->route('home');
+                    case 'virtual':
+                        $price = "10.00";
+                        break;
+                    default:
+                        $price = "30.00";
+                        break;
+                }
+                if ($price !== null) {
+                    return redirect()->route('paypal.pay', ['price' => $price]);
+                }
+
+            }
             
             $request->session()->regenerate();
 

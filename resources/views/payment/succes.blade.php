@@ -13,8 +13,7 @@
                 </div>
                 <h1 class="card-title">¡Pago exitoso!</h1>
                 <p class="card-text">
-                    Tu pago ha sido procesado correctamente. Hemos enviado un correo de confirmación 
-                    con los detalles de tu registro.
+                    Tu pago ha sido procesado correctamente.
                 </p>
                 <a href="{{ route('events.index') }}" class="btn btn-primary">
                     Ver más eventos

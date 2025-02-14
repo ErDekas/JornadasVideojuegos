@@ -15,7 +15,6 @@ class PaymentController extends Controller
     public function __construct(ApiService $apiService)
     {
         $this->apiService = $apiService;
-        $this->middleware('api.token');
     }
 
     public function process($registrationId)
@@ -31,6 +30,7 @@ class PaymentController extends Controller
     }
 
     public function createPayment($price){
+        
         $provider = new PayPalClient;
         $provider->setApiCredentials(config('paypal'));
     
