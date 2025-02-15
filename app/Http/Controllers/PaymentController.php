@@ -33,47 +33,65 @@ class PaymentController extends Controller
     }
 
     public function createPayment($price)
-{
-    $user = Session::get('user');
-    $provider = new PayPalClient;
-    $provider->setApiCredentials(config('paypal'));
-
-    try {
-        $paypalToken = $provider->getAccessToken();
-        if (!$paypalToken) {
-            return redirect()->route('paypal.cancel')->with('error', 'No se pudo obtener el token de PayPal.');
-        }
-
-        $response = $provider->createOrder([
-            "intent" => "CAPTURE",
-            "purchase_units" => [
-                [
-                    "amount" => [
-                        "currency_code" => "EUR",
-                        "value" => $price
+    {
+        try {
+            $provider = new PayPalClient;
+            
+            // Verifica que la configuración existe
+            $config = config('paypal');
+            if (empty($config)) {
+                Log::error('Configuración de PayPal no encontrada');
+                return redirect()->route('paypal.cancel')
+                               ->with('error', 'Error en la configuración de PayPal.');
+            }
+    
+            $provider->setApiCredentials($config);
+            $token = $provider->getAccessToken();
+            
+            if (!$token) {
+                Log::error('No se pudo obtener el token de PayPal');
+                return redirect()->route('paypal.cancel')
+                               ->with('error', 'Error de autenticación con PayPal.');
+            }
+    
+            // Guarda el ID del usuario en la sesión específicamente para PayPal
+            if (Session::has('user')) {
+                Session::put('paypal_user_id', Session::get('user')['id']);
+            }
+    
+            $response = $provider->createOrder([
+                "intent" => "CAPTURE",
+                "purchase_units" => [
+                    [
+                        "amount" => [
+                            "currency_code" => "EUR",
+                            "value" => number_format($price, 2, '.', '') // Asegura formato correcto
+                        ]
                     ]
+                ],
+                "application_context" => [
+                    "cancel_url" => route('paypal.cancel'),
+                    "return_url" => route('paypal.success')
                 ]
-            ],
-            "application_context" => [
-                "cancel_url" => url('/paypal/cancel'),
-                "return_url" => url('/paypal/success') . '?user_id=' . $user['id']  // Añadimos el user_id
-            ]
-        ]);
-
-        if (isset($response['id']) && $response['id'] != null) {
-            foreach ($response['links'] as $link) {
-                if ($link['rel'] === 'approve') {
-                    return redirect()->away($link['href']);
+            ]);
+    
+            Log::info('Respuesta de creación de orden PayPal:', ['response' => $response]);
+    
+            if (isset($response['id']) && $response['id'] != null) {
+                foreach ($response['links'] as $link) {
+                    if ($link['rel'] === 'approve') {
+                        return redirect()->away($link['href']);
+                    }
                 }
             }
+    
+            throw new \Exception('No se encontró el enlace de aprobación en la respuesta de PayPal');
+        } catch (\Exception $e) {
+            Log::error('Error al crear el pedido de PayPal: ' . $e->getMessage());
+            return redirect()->route('paypal.cancel')
+                           ->with('error', 'Error al conectar con PayPal: ' . $e->getMessage());
         }
-
-        return redirect()->route('paypal.cancel')->with('error', 'No se pudo procesar el pago.');
-    } catch (\Exception $e) {
-        Log::error('Error al crear el pedido de PayPal: ' . $e->getMessage());
-        return redirect()->route('paypal.cancel')->with('error', 'Error al conectar con PayPal.');
     }
-}
 
 public function capturePayment(Request $request)
 {

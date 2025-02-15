@@ -43,6 +43,12 @@ Route::middleware(['web'])->group(function () {
     Route::get('/logout', [AuthenticatedSessionController::class, 'destroy']);
 });
 
+Route::get('/paypal/pay/{price}', [PaymentController::class, 'createPayment'])->name('paypal.pay');
+    Route::get('/paypal/success', [PaymentController::class, 'capturePayment'])->name('paypal.success');
+    Route::get('/paypal/cancel', function () {
+        
+    })->name('paypal.cancel');
+
 // Rutas protegidas
 Route::middleware(\App\Http\Middleware\CheckApiToken::class)->group(function () {
     // Registro a eventos
@@ -52,11 +58,7 @@ Route::middleware(\App\Http\Middleware\CheckApiToken::class)->group(function () 
     // Pagos
     Route::get('/payment/{registration}', [PaymentController::class, 'process'])->name('payment.process');
     Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
-    Route::get('/paypal/pay/{price}', [PaymentController::class, 'createPayment'])->name('paypal.pay');
-    Route::get('/paypal/success', [PaymentController::class, 'capturePayment'])->name('paypal.success');
-    Route::get('/paypal/cancel', function () {
-        
-    })->name('paypal.cancel');
+    
     
     // Perfil
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
