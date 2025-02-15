@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Services\ApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log; // Asegúrate de importar Log
 use Exception;
 
 class LoginController extends Controller
@@ -35,48 +36,61 @@ class LoginController extends Controller
      * @param  \App\Http\Requests\LoginRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function login(LoginRequest $request)
-    {
-        try {
-            $response = $this->apiService->post('/login', [
-                'email' => $request->email,
-                'password' => $request->password
-            ]);
 
-            if (!isset($response['token']) || !isset($response['user'])) {
-                throw new \Exception('Error al obtener los datos de usuario.');
-            }
+     public function login(LoginRequest $request)
+     {
+         try {
+             $response = $this->apiService->post('/login', [
+                 'email' => $request->email,
+                 'password' => $request->password
+             ]);
+     
+             if (!isset($response['token']) || !isset($response['user'])) {
+                 throw new \Exception('Error al obtener los datos de usuario.');
+             }
+     
+             $user = $response['user'];
+             $token = $response['token'];
+     
+             // Consultamos nuevamente el usuario en la API para asegurarnos del estado de pago
+             $userData = $this->apiService->get("/users/{$user['id']}");
+     
+             // Log de toda la respuesta de la API
+             Log::info('Respuesta completa del usuario:', ['userData' => $userData]);
+     
+             // Corregir el acceso a los datos del usuario dentro de "users"
+             $userData = $userData['users']; // Extraemos los datos del usuario
+     
+             // Comprobar si is_first_login existe y es 0 (ya pagó)
+             if (isset($userData['is_first_login']) && $userData['is_first_login'] === 0) {
+                 // Usuario ya ha pagado, iniciar sesión normalmente
+                 Session::put('api_token', $token);
+                 Session::put('user', $user);
+                 $request->session()->regenerate();
+     
+                 Log::info("Usuario {$user['id']} ha pagado y está siendo redirigido al home.");
+                 return redirect()->intended(route('home'));
+             }
+     
+             // Si el usuario no ha pagado, redirigirlo a la pasarela de pago
+             $price = match($user['registration_type']) {
+                 'virtual' => "10.00",
+                 default => "30.00",
+             };
+     
+             Log::info("Usuario {$user['id']} no ha pagado, redirigiendo a PayPal.");
+             return redirect()->route('paypal.pay', ['price' => $price]);
+     
+         } catch (\Exception $e) {
+             Log::error('Error en login: ' . $e->getMessage());
+     
+             return back()->withErrors([
+                 'email' => 'Las credenciales proporcionadas son incorrectas.'
+             ])->withInput($request->except('password'));
+         }
+     }
+     
 
-            Session::put('api_token', $response['token']);
-            Session::put('user', $response['user']);
-            if ($response['user']['is_first_login'] === 1) {
-                $price = null;
-                switch($response['user']['registration_type']) {
-                    case 'student':
-                        return redirect()->route('home');
-                    case 'virtual':
-                        $price = "10.00";
-                        break;
-                    default:
-                        $price = "30.00";
-                        break;
-                }
-                if ($price !== null) {
-                    return redirect()->route('paypal.pay', ['price' => $price]);
-                }
-
-            }
-            
-            $request->session()->regenerate();
-
-            return redirect()->intended(route('home', absolute: false));
-
-        } catch (\Exception $e) {
-            return back()->withErrors([
-                'email' => 'Las credenciales proporcionadas son incorrectas.'
-            ])->withInput($request->except('password'));
-        }
-    }
 
     /**
      * Log the user out of the application.
