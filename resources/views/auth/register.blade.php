@@ -5,6 +5,13 @@
         <div class="card">
             <div class="card-body">
                 <h1 class="card-title">Registro</h1>
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                            @foreach ($errors->all() as $error)
+                                <p>{{ $error }}</p>
+                            @endforeach
+                    </div>
+                @endif
                 <form action="{{ route('register') }} " method="POST">
                     @csrf
                     <div class="mb-3">

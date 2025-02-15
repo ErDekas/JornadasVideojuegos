@@ -93,7 +93,7 @@ class RegisterController extends Controller
             ]);
 
             return back()
-                ->withErrors(['error' => 'Hubo un problema al procesar tu registro. Por favor, intenta nuevamente.'])
+                ->withErrors(['error' => 'Hubo un problema al procesar tu registro. Por favor, intenta nuevamente. Si sigue el error prueba con otro correo o ponte en contacto con servicio al cliente'])
                 ->withInput($request->except(['password', 'password_confirmation']));
         }
     }

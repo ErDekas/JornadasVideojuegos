@@ -85,7 +85,7 @@ class LoginController extends Controller
              Log::error('Error en login: ' . $e->getMessage());
      
              return back()->withErrors([
-                 'email' => 'Las credenciales proporcionadas son incorrectas.'
+                 'email' => 'No se ha podido iniciar sesión, o las credenciales no son correctas o tu cuenta no esta verificada'
              ])->withInput($request->except('password'));
          }
      }
