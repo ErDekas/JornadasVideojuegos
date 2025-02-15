@@ -88,8 +88,7 @@ class PaymentController extends Controller
             $response = $provider->capturePaymentOrder($paypalToken);
     
             if (isset($response['status']) && $response['status'] == 'COMPLETED') {
-                Session::put('api_token', $response['token']);
-                Session::put('user', $response['user']);
+                
                 try{
                     //die("try");
                     $this->apiService->put("/user/updateFirstLogin/{$response['user']['id']}", [
