@@ -5,6 +5,15 @@
         <div class="card">
             <div class="card-body">
                 <h1 class="card-title">Iniciar sesión</h1>
+
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                            @foreach ($errors->all() as $error)
+                                <p>{{ $error }}</p>
+                            @endforeach
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('login') }}">
                     @csrf
                     <div class="mb-3">
