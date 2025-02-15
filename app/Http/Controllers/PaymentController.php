@@ -81,31 +81,33 @@ class PaymentController extends Controller
 
         $paypalToken = $request->query('token');
         if (!$paypalToken) {
-            return redirect()->route('paypal.cancel')->with('error', 'Token inválido.');
+            return redirect()->route('paypal.home')->with('error', 'Token inválido.');
         }
 
         try {
             $response = $provider->capturePaymentOrder($paypalToken);
     
             if (isset($response['status']) && $response['status'] == 'COMPLETED') {
+                Session::put('api_token', $response['token']);
+                Session::put('user', $response['user']);
                 try{
                     //die("try");
                     $this->apiService->put("/user/updateFirstLogin/{$response['user']['id']}", [
-                        'is_first_login' => false
+                        'is_first_login' => 0
                     ]);
+                    $response['user']['is_first_login'] = false;  
+                    Session::put('user', $response['user']);
+                    return redirect()->route('home')->with('success', 'Pago exitoso.');
                 }
                 catch(Exception $e){
                     die($e->getMessage());
+                    //return redirect()->route('paypal.cancel')->with('error', 'Error al procesar el pago.');
                 }
-            
-                $response['user']['is_first_login'] = false;  
-                Session::put('user', $response['user']);
-                return redirect()->route('home')->with('success', 'Pago exitoso.');
             } else {
                 return redirect()->route('home')->with('error', 'El pago no se completó.');
             }
         } catch (\Exception $e) {
-            return redirect()->route('paypal.cancel')->with('error', 'Error al procesar el pago.');
+            return redirect()->route('home')->with('error', 'Error al procesar el pago.');
         }
     }
 }

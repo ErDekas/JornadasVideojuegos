@@ -50,8 +50,6 @@ class LoginController extends Controller
             Session::put('api_token', $response['token']);
             Session::put('user', $response['user']);
             if ($response['user']['is_first_login'] === 1) {
-                
-                
                 $price = null;
                 switch($response['user']['registration_type']) {
                     case 'student':
