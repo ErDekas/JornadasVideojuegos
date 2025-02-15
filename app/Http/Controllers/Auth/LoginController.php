@@ -51,18 +51,7 @@ class LoginController extends Controller
             Session::put('user', $response['user']);
             if ($response['user']['is_first_login'] === 1) {
                 
-                try{
-                    //die("try");
-                    $this->apiService->put("/user/updateFirstLogin/{$response['user']['id']}", [
-                        'is_first_login' => false
-                    ]);
-                }
-                catch(Exception $e){
-                    die($e->getMessage());
-                }
-            
-                $response['user']['is_first_login'] = false;  
-                Session::put('user', $response['user']);
+                
                 $price = null;
                 switch($response['user']['registration_type']) {
                     case 'student':

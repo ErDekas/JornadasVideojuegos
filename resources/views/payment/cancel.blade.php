@@ -16,7 +16,7 @@
                     El proceso de pago ha sido cancelado. No se ha realizado ningún cargo.
                 </p>
                 <a href="{{ route('events.index') }}" class="btn btn-primary">
-                    Volver a eventos
+                    Volver a inicio
                 </a>
             </div>
         </div>

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Services\ApiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
+use Exception;
 
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
@@ -86,9 +88,21 @@ class PaymentController extends Controller
             $response = $provider->capturePaymentOrder($paypalToken);
     
             if (isset($response['status']) && $response['status'] == 'COMPLETED') {
+                try{
+                    //die("try");
+                    $this->apiService->put("/user/updateFirstLogin/{$response['user']['id']}", [
+                        'is_first_login' => false
+                    ]);
+                }
+                catch(Exception $e){
+                    die($e->getMessage());
+                }
+            
+                $response['user']['is_first_login'] = false;  
+                Session::put('user', $response['user']);
                 return redirect()->route('home')->with('success', 'Pago exitoso.');
             } else {
-                return redirect()->route('paypal.cancel')->with('error', 'El pago no se completó.');
+                return redirect()->route('home')->with('error', 'El pago no se completó.');
             }
         } catch (\Exception $e) {
             return redirect()->route('paypal.cancel')->with('error', 'Error al procesar el pago.');

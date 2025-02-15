@@ -55,8 +55,7 @@ Route::middleware(\App\Http\Middleware\CheckApiToken::class)->group(function () 
     Route::get('/paypal/pay/{price}', [PaymentController::class, 'createPayment'])->name('paypal.pay');
     Route::get('/paypal/success', [PaymentController::class, 'capturePayment'])->name('paypal.success');
     Route::get('/paypal/cancel', function () {
-        //Cambiar por una vista
-        return "Pago cancelado.";
+        
     })->name('paypal.cancel');
     
     // Perfil
