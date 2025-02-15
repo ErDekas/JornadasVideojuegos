@@ -79,7 +79,7 @@ class LoginController extends Controller
              };
      
              Log::info("Usuario {$user['id']} no ha pagado, redirigiendo a PayPal.");
-             return redirect()->route('paypal.pay', ['price' => $price,'user_id' => $user['id']]);
+             return redirect()->route('paypal.pay', ['price' => $price,'userId' => $user['id']]);
      
          } catch (\Exception $e) {
              Log::error('Error en login: ' . $e->getMessage());

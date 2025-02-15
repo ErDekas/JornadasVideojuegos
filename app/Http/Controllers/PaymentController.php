@@ -32,7 +32,7 @@ class PaymentController extends Controller
         return redirect()->route('registration.success', $payment['registration_id']);
     }
 
-    public function createPayment($price)
+    public function createPayment($price, $userId)
     {
         try {
             $provider = new PayPalClient;
@@ -53,7 +53,6 @@ class PaymentController extends Controller
                 return redirect()->route('home')
                                ->with('error', 'Error de autenticación con PayPal.');
             }
-            
     
             $response = $provider->createOrder([
                 "intent" => "CAPTURE",
@@ -67,7 +66,7 @@ class PaymentController extends Controller
                 ],
                 "application_context" => [
                     "cancel_url" => route('paypal.cancel'),
-                    "return_url" => route('paypal.success')
+                    "return_url" => route('paypal.success') . "?user_id=" . $userId
                 ]
             ]);
     
@@ -96,18 +95,15 @@ public function capturePayment(Request $request)
     $provider->getAccessToken();
 
     $paypalToken = $request->query('token');
-    $userId = Session::get('paypal_user_id');
-    dd($userId);
+    $userId = $request->query('user_id');
     if (!$paypalToken || !$userId) {
         
         return redirect()->route('home')->with('error', 'Información de pago inválida.');
     }
-
     try {
         $response = $provider->capturePaymentOrder($paypalToken);
         Log::info('Respuesta de PayPal:', ['response' => $response]);
-
-        if (isset($response['response']) && $response['response']['status'] == 'COMPLETED') {
+        if ($response['status'] == 'COMPLETED') {
             try {
                 // En lugar de obtener el usuario de la sesión, lo obtenemos de la API
                 $userData = $this->apiService->get("/users/{$userId}");

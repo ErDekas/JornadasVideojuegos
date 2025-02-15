@@ -43,7 +43,7 @@ Route::middleware(['web'])->group(function () {
     Route::get('/logout', [AuthenticatedSessionController::class, 'destroy']);
 });
 
-Route::get('/paypal/pay/{price}', [PaymentController::class, 'createPayment'])->name('paypal.pay');
+Route::get('/paypal/pay/{price}/{userId}', [PaymentController::class, 'createPayment'])->name('paypal.pay');
     Route::get('/paypal/success', [PaymentController::class, 'capturePayment'])->name('paypal.success');
     Route::get('/paypal/cancel', function () {
         
