@@ -17,11 +17,9 @@
                     </div>
                 @endif
 
-                @//if()
                     <div class="alert alert-success">
                         Ya estás registrado en este evento.
                     </div>
-                @//endif
             </div>
         </div>
     </div>

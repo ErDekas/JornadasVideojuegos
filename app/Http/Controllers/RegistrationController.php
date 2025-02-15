@@ -31,10 +31,6 @@ class RegistrationController extends Controller
 
         $registration = $this->apiService->post('/registrations', $validated);
 
-        if ($registration['payment_required']) {
-            return redirect()->route('payment.process', $registration['id']);
-        }
-
         return redirect()->route('registration.success', $registration['id']);
     }
 }
