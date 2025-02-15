@@ -102,24 +102,16 @@ Route::get('email/verify/{token}', [EmailVerificationController::class, 'verify'
     ->name('verification.verify')
     ->middleware('guest');
 
-// Ruta de la vista para el formulario de "Olvidé mi contraseña"
 Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])
-    ->middleware('guest')
     ->name('password.request');
 
-// Ruta para manejar la solicitud de enlace de restablecimiento
 Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
-    ->middleware('guest')
     ->name('password.email');
 
-// Ruta para el formulario de restablecimiento de la contraseña
 Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])
-    ->middleware('guest')
     ->name('password.reset');
 
-// Ruta para procesar la actualización de la contraseña
 Route::post('/reset-password', [NewPasswordController::class, 'store'])
-    ->middleware('guest')
     ->name('password.update');
 
 

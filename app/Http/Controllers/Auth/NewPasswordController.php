@@ -3,18 +3,21 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use App\Services\ApiService;
+use Illuminate\Support\Facades\Log;
 
 class NewPasswordController extends Controller
 {
+    protected $apiService;
+
+    public function __construct(ApiService $apiService)
+    {
+        $this->apiService = $apiService;
+    }
+
     /**
      * Display the password reset view.
      */
@@ -25,37 +28,40 @@ class NewPasswordController extends Controller
 
     /**
      * Handle an incoming new password request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'token' => ['required'],
             'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
-        // Intentamos restablecer la contraseña del usuario
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user) use ($request) {
-                $user->forceFill([
-                    'password' => Hash::make($request->password),
-                    'remember_token' => Str::random(60),
-                ])->save();
+        try {
+            $apiResponse = $this->apiService->post('/password/reset', [
+                'token' => $request->token,
+                'email' => $request->email,
+                'password' => $request->password,
+                'password_confirmation' => $request->password_confirmation,
+            ]);
 
-                event(new PasswordReset($user));
+            if (isset($apiResponse['success']) && $apiResponse['success'] === true) {
+                return redirect()->route('login')->with('status', 'Tu contraseña ha sido restablecida exitosamente.');
             }
-        );
 
-        // Si la contraseña se actualizó correctamente
-        if ($status == Password::PASSWORD_RESET) {
-            return redirect()->route('login')->with('status', 'Tu contraseña se ha restablecido correctamente. Ya puedes iniciar sesión.');
+            return back()->withErrors([
+                'email' => $apiResponse['message'] ?? 'Error al restablecer la contraseña.'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Password reset failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->withErrors([
+                'email' => 'Hubo un problema al restablecer la contraseña. Por favor, intenta nuevamente.'
+            ]);
         }
-
-        // Si hubo un error al restablecer la contraseña
-        return back()->withInput($request->only('email'))
-            ->withErrors(['email' => 'Hubo un error al restablecer la contraseña. Por favor, intenta de nuevo.']);
     }
 }

@@ -104,7 +104,7 @@ trait Mail
     {
         $this->initializeMailer();
         try {
-            $resetUrl = route('password.request', ['token' => $token, 'email' => $email]);
+            $resetUrl = route('password.reset', ['token' => $token, 'email' => $email]);
 
             $this->mailer->addAddress($email, $nombre);
             $this->mailer->Subject = 'Restablece tu contraseña';
