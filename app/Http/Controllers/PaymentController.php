@@ -91,16 +91,16 @@ class PaymentController extends Controller
                 
                 try{
                     //die("try");
-                    $this->apiService->put("/user/updateFirstLogin/{$response['user']['id']}", [
-                        'is_first_login' => 0
+                    $user = Session::get('user');
+                    $this->apiService->put("/user/updateFirstLogin/{$user['id']}", [
+                        'is_first_login' => false
                     ]);
-                    $response['user']['is_first_login'] = false;  
-                    Session::put('user', $response['user']);
+                    $user['is_first_login'] = false;  
+                    Session::put('user', $user);
                     return redirect()->route('home')->with('success', 'Pago exitoso.');
                 }
                 catch(Exception $e){
-                    die($e->getMessage());
-                    //return redirect()->route('paypal.cancel')->with('error', 'Error al procesar el pago.');
+                    return redirect()->route('paypal.cancel')->with('error', 'Error al procesar el pago.');
                 }
             } else {
                 return redirect()->route('home')->with('error', 'El pago no se completó.');
