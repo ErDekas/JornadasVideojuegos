@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\ApiService;
 use App\Http\Requests\EventRequest;
 use App\Http\Requests\SeleccionEventsRequest;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 
 class EventController extends Controller
@@ -135,8 +136,8 @@ class EventController extends Controller
         return back()->with('error', 'No se pudo eliminar el evento');
     }
 
-    /**
-     * Show registration form for an event.
+     /**
+     * Show registration confirmation page for an event.
      *
      * @param  int  $id
      * @return \Illuminate\View\View
@@ -144,65 +145,92 @@ class EventController extends Controller
     public function showRegistrationForm($id)
     {
         $event = $this->apiService->get("/events/{$id}");
-        return view('events.register', compact('event'));
+        if (empty($event)) {
+            return redirect()->route('events.index')
+                           ->with('error', 'El evento no se ha encontrado');
+        }
+
+        // Check availability
+        $availability = $this->apiService->get("/events/{$id}/availability");
+        
+        if (empty($availability)) {
+            return redirect()->route('events.index')
+                           ->with('error', 'No se pudo verificar la disponibilidad del evento');
+        }
+
+        if ($availability['available_slots'] <= 0) {
+            return redirect()->route('events.show', $id)
+                           ->with('error', 'No hay plazas disponibles para este evento');
+        }
+
+        return view('events.register', [
+            'event' => $event,
+            'availability' => $availability
+        ]);
     }
 
-
     /**
-     * Register user for a single event.
+     * Automatically register user for an event.
      *
      * @param  int  $id
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function register($id, Request $request)
+    public function register($id)
     {
-        $event = $this->apiService->get("/events/{$id}");
-        // Esta ruta hay que cambiarla
-        $userRegistrations = $this->apiService->get("/users/registrations");
+        // Check availability
+        $availability = $this->apiService->get("/events/{$id}/availability");
         
-        if ($event['type'] === 'conference' && $userRegistrations['conference_count'] >= 5) {
-            return back()->with('error', 'Se ha alcanzado el límite de conferencias');
-        }
-        
-        if ($event['type'] === 'workshop' && $userRegistrations['workshop_count'] >= 4) {
-            return back()->with('error', 'Has alcanzado el límite de talleres permitidos');
+        // Verificar si la respuesta es null o está vacía
+        if (empty($availability)) {
+            return redirect()->route('events.show', $id)
+                           ->with('error', 'No se pudo verificar la disponibilidad del evento');
         }
 
-        // Creo que es el evento de guardar el registro del usuario a un evento
-        // hay que cambiarlo por la ruta correcta con los parametrod correctos
-        $response = $this->apiService->post("/events/{$id}/store", [
-            'type' => $request->type,
-            'is_student' => $request->is_student,
+        if ($availability['available_slots'] <= 0) {
+            return redirect()->route('events.show', $id)
+                           ->with('error', 'No hay plazas disponibles para este evento');
+        }
+
+        // Obtener el usuario de la sesión
+        $user = Session::get('user');
+        if (!$user) {
+            return redirect()->route('events.show', $id)
+                           ->with('error', 'Debes iniciar sesión para registrarte');
+        }
+
+        // Attempt to register
+        $response = $this->apiService->post("/events/{$id}/register", [
+            'user_id' => $user['id']
         ]);
-
-        if ($response['success']) {
-            // cambiarlo por el tipo de registro del usuario
-            if ($request->type !== 'free') {
-                return redirect()->route('payment.process', ['registration_id' => $response['registration_id']]);
-            }
-            // Creo que hay que cambiarlo
-            return redirect()->route('events.registration.success', ['id' => $response['registration_id']])
-                           ->with('success', 'Registro completado con éxito');
+        // dd($response, $availability);
+        // Verificar si la respuesta es null o está vacía
+        if (empty($response)) {
+            return redirect()->route('events.show', $id)
+                           ->with('error', 'No se pudo completar el registro');
         }
 
-        return back()->with('error', 'No se pudo completar el registro');
+        return redirect()->route('events.registration.success', ['id' => $response['event_id']])
+                        ->with('success', 'Registro completado con éxito');
     }
 
     /**
      * Display registration success page.
      *
-     * @param  int  $registrationId
+     * @param  int  $id
      * @return \Illuminate\View\View
      */
-    public function registrationSuccess($registrationId = null)
+    public function registrationSuccess($id)
     {
-        if ($registrationId) {
-            $registration = $this->apiService->get("/registrations/{$registrationId}");
-            return view('events.registration-success', compact('registration'));
-        }
+        $registration = $this->apiService->get("/events/{$id}/register");
         
-        return view('events.registration-success');
+        if (empty($registration)) {
+            return redirect()->route('events.index')
+                           ->with('error', 'No se encontró el registro del evento');
+        }
+
+        return view('events.registration-success', [
+            'registration' => $registration
+        ]);
     }
 
     /**
@@ -215,10 +243,11 @@ class EventController extends Controller
     {
         $response = $this->apiService->delete("/registrations/{$id}");
 
-        if ($response['success']) {
-            return back()->with('success', 'Registro cancelado con éxito');
+        if (empty($response)) {
+            return back()->with('error', 'No se pudo cancelar el registro');
         }
 
-        return back()->with('error', 'No se pudo cancelar el registro');
+        return redirect()->route('events.index')
+                        ->with('success', 'Registro cancelado con éxito');
     }
 }

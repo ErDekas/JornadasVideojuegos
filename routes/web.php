@@ -31,7 +31,7 @@ Route::get('/', [EventController::class, 'index'])->name('home');
 // Eventos
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{id}', [EventController::class, 'show'])->name('events.show');
-Route::get('/events/{id}/register', [EventController::class, 'showRegistrationForm'])->name('events.register');
+Route::get('/events/{id}/register', [EventController::class, 'showRegistrationForm'])->name('events.showRegistrationForm');
 Route::post('/events/{id}/register', [EventController::class, 'register'])->name('events.register');
 Route::get('/registration/{id}/success', [EventController::class, 'registrationSuccess'])->name('events.registration.success');
 Route::delete('/registration/{id}', [EventController::class, 'cancelRegistration'])->name('events.registration.cancel');
