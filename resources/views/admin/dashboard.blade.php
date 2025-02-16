@@ -16,24 +16,28 @@
                     <h4 class="px-3 text-white">Admin Dashboard</h4>
                     <ul class="nav flex-column mt-4">
                         <li class="nav-item">
-                            <a class="nav-link text-white" href="{{ route('admin.ponentes.index') }}">
+                            <a class="nav-link text-white" href="{{ route('admin.speakers.index') }}">
                                 <i class="fas fa-users me-2"></i> Ponentes
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" href="{{ route('admin.eventos.index') }}">
+                            <a class="nav-link text-white" href="{{ route('admin.events.index') }}">
                                 <i class="fas fa-calendar me-2"></i> Eventos
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" href="{{ route('admin.asistentes.index') }}">
-                                <i class="fas fa-user-check me-2"></i> Asistentes
+                            <a class="nav-link text-white" href="{{ route('admin.users.index') }}">
+                                <i class="fas fa-user-check me-2"></i> Usuarios
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" href="{{ route('admin.ingresos.index') }}">
+                            <a class="nav-link text-white" href="{{ route('admin.payments.index') }}">
                                 <i class="fas fa-dollar-sign me-2"></i> Ingresos
                             </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url('/logout') }}">Cerrar sesión</a>
+                            
                         </li>
                     </ul>
                 </div>

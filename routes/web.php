@@ -21,7 +21,7 @@ use App\Http\Controllers\Admin\{
     AdminController,
     AdminEventController,
     AdminSpeakerController,
-    AdminAttendeeController,
+    AdminUserController,
     AdminPaymentController
 };
 
@@ -66,23 +66,30 @@ Route::middleware(\App\Http\Middleware\CheckApiToken::class)->group(function () 
 });
 
 // Rutas del Panel de Administración
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+Route::prefix('admin')->middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
     // Dashboard principal
-    Route::get('/', [AdminController::class, 'index'])->name('dashboard');
+    Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
     
     // Gestión de Ponentes
-    Route::resource('speakers', AdminSpeakerController::class)->except(['show']);
+    Route::resource('speakers', AdminSpeakerController::class)
+        ->except(['show'])
+        ->names('admin.speakers');
     
     // Gestión de Eventos
-    Route::resource('events', AdminEventController::class)->except(['show']);
+    Route::resource('events', AdminEventController::class)
+        ->except(['show'])
+        ->names('admin.events');
     
-    // Gestión de Asistentes
-    Route::get('attendees', [AdminAttendeeController::class, 'index'])->name('attendees.index');
-    Route::delete('attendees/{id}', [AdminAttendeeController::class, 'destroy'])->name('attendees.destroy');
+    // Gestión de Usuarios
+    Route::resource('users', AdminUserController::class)
+        ->except(['show'])
+        ->names('admin.users');
     
     // Gestión de Ingresos/Pagos
-    Route::get('payments', [AdminPaymentController::class, 'index'])->name('payments.index');
-    Route::get('payments/export', [AdminPaymentController::class, 'export'])->name('payments.export');
+    Route::get('payments', [AdminPaymentController::class, 'index'])
+        ->name('admin.payments.index');
+    Route::get('payments/export', [AdminPaymentController::class, 'export'])
+        ->name('admin.payments.export');
 });
 
 // Rutas de Autenticación

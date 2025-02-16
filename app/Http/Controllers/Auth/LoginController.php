@@ -38,57 +38,57 @@ class LoginController extends Controller
      */
 
      public function login(LoginRequest $request)
-     {
-         try {
-             $response = $this->apiService->post('/login', [
-                 'email' => $request->email,
-                 'password' => $request->password
-             ]);
-     
-             if (!isset($response['token']) || !isset($response['user'])) {
-                 throw new \Exception('Error al obtener los datos de usuario.');
-             }
-     
-             $user = $response['user'];
-             $token = $response['token'];
-     
-             // Consultamos nuevamente el usuario en la API para asegurarnos del estado de pago
-             $userData = $this->apiService->get("/users/{$user['id']}");
-     
-             // Log de toda la respuesta de la API
-             Log::info('Respuesta completa del usuario:', ['userData' => $userData]);
-     
-             // Corregir el acceso a los datos del usuario dentro de "users"
-             $userData = $userData['users']; // Extraemos los datos del usuario
-     
-             // Comprobar si is_first_login existe y es 0 (ya pagó)
-             if (isset($userData['is_first_login']) && $userData['is_first_login'] === 0) {
-                 // Usuario ya ha pagado, iniciar sesión normalmente
-                 Session::put('api_token', $token);
-                 Session::put('user', $user);
-                 $request->session()->regenerate();
-     
-                 Log::info("Usuario {$user['id']} ha pagado y está siendo redirigido al home.");
-                 return redirect()->intended(route('home'));
-             }
-     
-             // Si el usuario no ha pagado, redirigirlo a la pasarela de pago
-             $price = match($user['registration_type']) {
-                 'virtual' => "10.00",
-                 default => "30.00",
-             };
-     
-             Log::info("Usuario {$user['id']} no ha pagado, redirigiendo a PayPal.");
-             return redirect()->route('paypal.pay', ['price' => $price,'userId' => $user['id']]);
-     
-         } catch (\Exception $e) {
-             Log::error('Error en login: ' . $e->getMessage());
-     
-             return back()->withErrors([
-                 'email' => 'No se ha podido iniciar sesión, o las credenciales no son correctas o tu cuenta no esta verificada'
-             ])->withInput($request->except('password'));
-         }
-     }
+{
+    try {
+        $response = $this->apiService->post('/login', [
+            'email' => $request->email,
+            'password' => $request->password
+        ]);
+
+        if (!isset($response['token']) || !isset($response['user'])) {
+            throw new \Exception('Error al obtener los datos de usuario.');
+        }
+
+        $user = $response['user'];
+        $token = $response['token'];
+
+        // Consultamos nuevamente el usuario en la API
+        $userData = $this->apiService->get("/users/{$user['id']}");
+        $userData = $userData['users'];
+        // Guardamos la sesión
+        Session::put('api_token', $token);
+        Session::put('user', $user);
+        $request->session()->regenerate();
+
+        // Verificamos si es admin (ahora manejando el valor booleano)
+        if (isset($userData['is_admin']) && $userData['is_admin'] === true) {
+            Log::info("Usuario administrador {$user['id']} redirigido al panel admin.");
+            return redirect()->route('admin.dashboard');
+        }
+
+        // Si no es admin, verificamos el pago
+        if (isset($userData['is_first_login']) && $userData['is_first_login'] === 0) {
+            Log::info("Usuario {$user['id']} ha pagado y está siendo redirigido al home.");
+            return redirect()->intended(route('home'));
+        }
+
+        // Si el usuario no ha pagado, redirigirlo a la pasarela de pago
+        $price = match($user['registration_type']) {
+            'virtual' => "10.00",
+            default => "30.00",
+        };
+
+        Log::info("Usuario {$user['id']} no ha pagado, redirigiendo a PayPal.");
+        return redirect()->route('paypal.pay', ['price' => $price, 'userId' => $user['id']]);
+
+    } catch (\Exception $e) {
+        Log::error('Error en login: ' . $e->getMessage());
+
+        return back()->withErrors([
+            'email' => 'No se ha podido iniciar sesión, o las credenciales no son correctas o tu cuenta no esta verificada'
+        ])->withInput($request->except('password'));
+    }
+}
      
 
 

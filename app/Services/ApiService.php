@@ -3,11 +3,12 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ApiService
 {
     protected $baseUrl;
-    
+
     public function __construct()
     {
         $this->baseUrl = config('services.api.url');
@@ -38,12 +39,17 @@ class ApiService
     }
 
     public function put($endpoint, $data = [])
-    {
-        return Http::withHeaders($this->getHeaders())
-            ->put($this->baseUrl . $endpoint, $data)
-            ->throw()
-            ->json();
-    }
+{
+    $token = session('api_token');
+    Log::info('Token actual en la sesión:', ['token' => $token]);
+    
+    $response = Http::withHeaders($this->getHeaders())
+        ->put($this->baseUrl . $endpoint, $data);
+    
+    Log::info('Respuesta API completa:', ['response' => $response->json(), 'status' => $response->status()]);
+    
+    return $response->json();
+}
 
     public function delete($endpoint)
     {

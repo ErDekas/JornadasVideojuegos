@@ -11,6 +11,10 @@ use App\Http\Controllers\Controller;
 
 class AdminController extends Controller
 {
+    public function index()
+    {
+        return view('admin.dashboard');
+    }
     /**
      * Method to get the statistics
      */
@@ -32,4 +36,5 @@ class AdminController extends Controller
             'total_registrations' => $totalRegistrations
         ], 200);
     }
+    
 }

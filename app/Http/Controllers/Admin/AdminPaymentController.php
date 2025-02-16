@@ -9,6 +9,10 @@ use App\Http\Controllers\Controller;
 
 class AdminPaymentController extends Controller
 {
+    public function index()
+    {
+        return view('admin.payment.index');
+    }
     /**
      * Method to get the list of payments
      */
