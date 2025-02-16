@@ -18,6 +18,7 @@
                 @endif
 
                 <div class="card-text mb-4">
+
                     <p>Te has registrado correctamente al evento:</p>
                     <h2 class="h5">{{ $registration['event']['title'] }}</h2>
                     <p class="mb-0"><strong>Fecha:</strong> <span id="formatted-date">{{ $registration['event']['date'] }}</span></p>

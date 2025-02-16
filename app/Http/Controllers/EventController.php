@@ -177,40 +177,51 @@ class EventController extends Controller
      */
     public function register($id)
     {
-        // Check availability
-        $availability = $this->apiService->get("/events/{$id}/availability");
+        try{
+            // Check availability
+            $availability = $this->apiService->get("/events/{$id}/availability");
         
-        // Verificar si la respuesta es null o está vacía
-        if (empty($availability)) {
-            return redirect()->route('events.show', $id)
+            // Verificar si la respuesta es null o está vacía
+            if (empty($availability)) {
+                return redirect()->route('events.show', $id)
                            ->with('error', 'No se pudo verificar la disponibilidad del evento');
-        }
+            }
 
-        if ($availability['available_slots'] <= 0) {
-            return redirect()->route('events.show', $id)
+            if ($availability['available_slots'] <= 0) {
+                return redirect()->route('events.show', $id)
                            ->with('error', 'No hay plazas disponibles para este evento');
-        }
+            }
 
-        // Obtener el usuario de la sesión
-        $user = Session::get('user');
-        if (!$user) {
-            return redirect()->route('events.show', $id)
+            // Obtener el usuario de la sesión
+            $user = Session::get('user');
+            if (!$user) {
+                return redirect()->route('events.show', $id)
                            ->with('error', 'Debes iniciar sesión para registrarte');
-        }
+            }
 
-        // Attempt to register
-        $response = $this->apiService->post("/events/{$id}/register", [
-            'user_id' => $user['id']
-        ]);
-        // dd($response, $availability);
-        // Verificar si la respuesta es null o está vacía
-        if (empty($response)) {
-            return redirect()->route('events.show', $id)
+            // Attempt to register
+            $response = $this->apiService->post("/events/{$id}/register", [
+                'user_id' => $user['id']
+            ]);
+            // Verificar si la respuesta es null o está vacía
+            if (empty($response)) {
+                return redirect()->route('events.show', $id)
                            ->with('error', 'No se pudo completar el registro');
-        }
+            }
 
-        return redirect()->route('events.registration.success', ['id' => $response['event_id']])
+            return redirect()->route('events.registration.success', ['id' => $response['event_id']])
                         ->with('success', 'Registro completado con éxito');
+        }
+        catch(\Exception $e){
+            if($e->getCode() === 409){
+                return redirect()->route('events.show', $id)
+                ->with('error', 'Error. El usuario ya esta registrado a este evento');
+            }
+            else if($e->getCode() === 404){
+                return redirect()->route('events.show', $id)
+                ->with('error', 'Error. El evento no se ha encontrado');
+            }
+        }
     }
 
     /**
@@ -221,14 +232,14 @@ class EventController extends Controller
      */
     public function registrationSuccess($id)
     {
-        $registration = $this->apiService->get("/events/{$id}/register");
+        $registration = $this->apiService->get("/events/{$id}");
         
         if (empty($registration)) {
             return redirect()->route('events.index')
                            ->with('error', 'No se encontró el registro del evento');
         }
 
-        return view('events.registration-success', [
+        return view('events.succes', [
             'registration' => $registration
         ]);
     }
