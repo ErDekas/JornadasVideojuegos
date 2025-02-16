@@ -6,12 +6,22 @@
     <div class="col-md-4 mb-4">
         <div class="card text-center h-100">
             <div class="card-body">
-                <img src="http://127.0.0.1:3050/storage/{{ $speaker['photo_url'] }}"
+                <img src="http://127.0.0.1:8080/storage/{{ $speaker['photo_url'] }}"
                     alt="{{ $speaker['name'] }}"
                     class="rounded-circle mb-3"
                     style="width: 150px; height: 150px; object-fit: cover;">
                 <h5 class="card-title">{{ $speaker['name'] }}</h5>
-                <p class="card-text">{{ $speaker['expertise_areas'] }}</p>
+                <ul class="list-unstyled">
+                    @php
+                        $expertise = json_decode($speaker['expertise_areas'], true);
+                    @endphp
+
+                    @if(is_array($expertise))
+                        @foreach($expertise as $area)
+                            <li>{{ $area }}</li>
+                        @endforeach
+                    @endif
+                </ul>
                 <a href="{{ route('speakers.show', $speaker['id']) }}" class="btn btn-primary">
                     Ver perfil
                 </a>
