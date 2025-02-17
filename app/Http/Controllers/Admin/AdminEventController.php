@@ -73,8 +73,8 @@ class AdminEventController extends Controller
             'location' => $request->location,
             'speakers' => $request->speakers // Asegúrate de que el campo 'speakers' esté en el formulario
         ]);
-
-        if ($response['success']) {
+        //  dd($response);
+        if ($response['message']=="El evento ha sido agregado correctamente") {
             return redirect()->route('admin.events.index')
                 ->with('success', 'Evento creado exitosamente');
         }
@@ -143,7 +143,6 @@ class AdminEventController extends Controller
             'location' => $request->location,
             'speakers' => $request->speakers, // Asegúrate de incluir esto
         ]);
-        // dd($response);
         if ($response['message']=="El evento ha sido actualizado correctamente") {
             return redirect()->route('admin.events.index', $id)
                 ->with('success', 'Evento actualizado exitosamente');

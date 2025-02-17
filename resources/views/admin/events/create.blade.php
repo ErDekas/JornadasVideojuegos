@@ -33,8 +33,8 @@
                     <select class="form-select @error('type') is-invalid @enderror"
                         id="type" name="type" required>
                         <option value="">Selecciona un tipo</option>
-                        <option value="presencial">Presencial</option>
-                        <option value="virtual">Virtual</option>
+                        <option value="conference" {{ 'type' == 'conference' ? 'selected' : '' }}>Conferencia</option>
+                        <option value="workshop" {{ 'type' == 'workshop' ? 'selected' : '' }}>Workshop</option>
                     </select>
                     @error('type')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -81,6 +81,16 @@
                             <input type="number" class="form-control @error('max_attendees') is-invalid @enderror"
                                 id="max_attendees" name="max_attendees" value="{{ old('max_attendees') }}" required>
                             @error('max_attendees')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="current_attendees" class="form-label">Máximo de asistentes</label>
+                            <input type="number" class="form-control @error('current_attendees') is-invalid @enderror"
+                                id="current_attendees" name="current_attendees" value="{{ old('current_attendees', 'current_attendees') }}" required>
+                            @error('current_attendees')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
