@@ -88,6 +88,16 @@
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
+                            <label for="current_attendees" class="form-label">Máximo de asistentes</label>
+                            <input type="number" class="form-control @error('current_attendees') is-invalid @enderror"
+                                id="current_attendees" name="current_attendees" value="{{ old('current_attendees', $event['current_attendees']) }}" required>
+                            @error('current_attendees')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
                             <label for="location" class="form-label">Ubicación</label>
                             <input type="text" class="form-control @error('location') is-invalid @enderror"
                                 id="location" name="location" value="{{ old('location', $event['location']) }}" required>

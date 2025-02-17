@@ -14,12 +14,23 @@ class EventRequest extends FormRequest
     public function rules()
     {
         return [
-            'titulo' => 'required|string|max:255',
-            'tipo' => 'required|in:conferencia,taller',
-            'ponente_id' => 'required|exists:ponentes,id',
-            'fecha' => 'required|date|in:jueves,viernes',
-            'hora_inicio' => 'required|date_format:H:i',
-            'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:500',
+            'type' => 'required|in:conference,workshop',
+            'date' => 'required|date',
+            'start_time' => 'required', // Cambiar a solo formato de hora
+            'end_time' => 'required', // Cambiar a solo formato de hora
+            'max_attendees' => 'required|integer|min:1',
+            'location' => ['required', function ($attribute, $value, $fail) {
+                // Validación para conferencias
+                if ($this->input('type') == 'conference' && $value != 'auditorium') {
+                    $fail('Las conferencias deben ser en el auditorio.');
+                }
+                // Validación para talleres
+                if ($this->input('type') == 'workshop' && $value != 'classroom') {
+                    $fail('Los talleres deben ser en el aula.');
+                }
+            }],
         ];
     }
 
@@ -33,4 +44,3 @@ class EventRequest extends FormRequest
         ];
     }
 }
-

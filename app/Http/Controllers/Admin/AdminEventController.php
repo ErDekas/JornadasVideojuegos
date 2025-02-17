@@ -110,10 +110,10 @@ class AdminEventController extends Controller
     public function edit($id)
     {
         $response = $this->apiService->get("/events/{$id}");
-        $speakers = $this->apiService->get('/speakers');
+        $speakersResponse = $this->apiService->get('/speakers');
 
-        $speakers = $response['speakers'] ?? [];
-        $event = $response['event']; // Extraer los datos reales del evento
+        $event = $response['event'] ?? []; // Extraer los datos reales del evento
+        $speakers = $speakersResponse['speakers'] ?? []; // Obtener la lista de ponentes disponibles
 
         return view('admin.events.edit', [
             'event' => $event,
@@ -130,6 +130,7 @@ class AdminEventController extends Controller
      */
     public function update(EventRequest $request, $id)
     {
+        // Incluye los datos de los ponentes en la actualización
         $response = $this->apiService->put("/events/{$id}", [
             'title' => $request->title,
             'description' => $request->description,
@@ -140,10 +141,11 @@ class AdminEventController extends Controller
             'max_attendees' => $request->max_attendees,
             'current_attendees' => $request->current_attendees,
             'location' => $request->location,
+            'speakers' => $request->speakers, // Asegúrate de incluir esto
         ]);
-
-        if ($response['success']) {
-            return redirect()->route('admin.events.show', $id)
+        // dd($response);
+        if ($response['message']=="El evento ha sido actualizado correctamente") {
+            return redirect()->route('admin.events.index', $id)
                 ->with('success', 'Evento actualizado exitosamente');
         }
 
