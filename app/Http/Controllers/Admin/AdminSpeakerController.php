@@ -56,8 +56,13 @@ class AdminSpeakerController extends Controller
             'name' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'social_links' => 'nullable',
-            'exprestise_areas' => 'nullable|array'
+            'expertise_areas' => 'nullable|string'
         ]);
+        // Convertir expertise_areas de string a array
+        if ($request->filled('expertise_areas')) {
+            $validated['expertise_areas'] = explode(',', $request->input('expertise_areas'));
+            $validated['expertise_areas'] = array_map('trim', $validated['expertise_areas']); // Eliminar espacios extra
+        }
 
         // Manejar la subida de la imagen
         if ($request->hasFile('image')) {
@@ -66,7 +71,7 @@ class AdminSpeakerController extends Controller
         }
 
         $response = $this->apiService->post("/speakers", $validated);
-
+        dd($response);
         if ($response['success'] ?? false) {
             return redirect()->route('admin.speakers.index')
                 ->with('success', 'Ponente creado exitosamente');
@@ -121,35 +126,35 @@ class AdminSpeakerController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'expertise_areas' => 'nullable|string', // Cambiamos de array a string porque vendrá como texto
-        'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        'social_links' => 'nullable'
-    ]);
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'expertise_areas' => 'nullable|string', // Cambiamos de array a string porque vendrá como texto
+            'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'social_links' => 'nullable'
+        ]);
 
-    // Convertir expertise_areas de string a array
-    if ($request->filled('expertise_areas')) {
-        $validated['expertise_areas'] = explode(',', $request->input('expertise_areas'));
-        $validated['expertise_areas'] = array_map('trim', $validated['expertise_areas']); // Eliminar espacios extra
+        // Convertir expertise_areas de string a array
+        if ($request->filled('expertise_areas')) {
+            $validated['expertise_areas'] = explode(',', $request->input('expertise_areas'));
+            $validated['expertise_areas'] = array_map('trim', $validated['expertise_areas']); // Eliminar espacios extra
+        }
+
+        // Manejar la subida de la nueva imagen
+        if ($request->hasFile('photo_url')) {
+            $path = $request->file('photo_url')->store('speakers', 'public');
+            $validated['photo_url'] = asset('storage/' . $path);
+        }
+
+        $response = $this->apiService->put("/speakers/{$id}", $validated);
+        if ($response['message'] == "El ponente ha sido actualizado correctamente" ?? false) {
+            return redirect()->route('admin.speakers.index', $id)
+                ->with('success', 'Ponente actualizado exitosamente');
+        }
+
+        return back()->with('error', 'Error al actualizar el ponente')
+            ->withInput();
     }
-
-    // Manejar la subida de la nueva imagen
-    if ($request->hasFile('photo_url')) {
-        $path = $request->file('photo_url')->store('speakers', 'public');
-        $validated['photo_url'] = asset('storage/' . $path);
-    }
-
-    $response = $this->apiService->put("/speakers/{$id}", $validated);
-    if ($response['message']=="El ponente ha sido actualizado correctamente" ?? false) {
-        return redirect()->route('admin.speakers.index', $id)
-            ->with('success', 'Ponente actualizado exitosamente');
-    }
-
-    return back()->with('error', 'Error al actualizar el ponente')
-        ->withInput();
-}
 
 
     /**

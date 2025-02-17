@@ -7,7 +7,8 @@
         <h1>{{ $speaker['speaker']['name'] }}</h1>
             <ul class="list-unstyled">
                 @php
-                    $expertise = json_decode($speaker['speaker']['expertise_areas'], true);
+                    // Verificamos si 'expertise_areas' es una cadena JSON y la decodificamos
+                    $expertise = is_string($speaker['speaker']['expertise_areas']) ? json_decode($speaker['speaker']['expertise_areas'], true) : $speaker['speaker']['expertise_areas'];
                 @endphp
 
                 @if(is_array($expertise))
@@ -20,7 +21,8 @@
             <div class="col-md-8 mx-auto">
                 <h2 class="h4 mt-4">Redes Sociales</h2>
                 @php
-                    $socialLinks = json_decode($speaker['speaker']['social_links'], true);
+                    // Verificamos si 'social_links' es una cadena JSON y la decodificamos
+                    $socialLinks = is_string($speaker['speaker']['social_links']) ? json_decode($speaker['speaker']['social_links'], true) : $speaker['speaker']['social_links'];
                 @endphp
 
                 @if(is_array($socialLinks))
