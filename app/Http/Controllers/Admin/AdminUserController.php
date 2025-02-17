@@ -53,6 +53,7 @@ class AdminUserController extends Controller
      */
     public function store(Request $request)
     {
+        // Validación de los datos
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
@@ -64,15 +65,22 @@ class AdminUserController extends Controller
 
         // Convertir checkbox a booleano explícito
         $validated['is_admin'] = $request->has('is_admin') ? true : false;
-        
+
+        // Llamada a la API para crear el usuario
         $response = $this->apiService->post('/users', $validated);
 
-        if (isset($response['message']) && $response['message'] === 'El usuario ha sido actualizado correctamente') {
+        // Verificación de la respuesta: buscamos que el 'id' esté presente para confirmar que se creó el usuario
+        if (isset($response['id']) && $response['id']) {
+            // Si el usuario se ha creado correctamente, redirigimos a la lista de usuarios con un mensaje de éxito
             return redirect()->route('admin.users.index')
                 ->with('success', 'Usuario creado exitosamente');
         }
 
-        return back()->with('error', 'Error al crear el usuario: ' . ($response['message'] ?? 'Error desconocido'))
+        // Si no se crea el usuario o si la respuesta contiene un mensaje de error, regresamos al formulario con un error
+        $errorMessage = isset($response['message']) ? $response['message'] : 'Error desconocido';
+
+        // Retornar el mensaje de error con los datos que se intentaron enviar
+        return back()->with('error', 'Error al crear el usuario: ' . $errorMessage)
             ->withInput();
     }
 
@@ -85,11 +93,11 @@ class AdminUserController extends Controller
     public function show($id)
     {
         $response = $this->apiService->get("/users/{$id}");
-        
+
         if (!isset($response['users'])) {
             return back()->with('error', 'No se pudo cargar el usuario');
         }
-        
+
         $user = $response['users'];
         $registrations = $this->apiService->get("/users/{$id}/registrations") ?? [];
         $events = $this->apiService->get("/users/{$id}/events") ?? [];
@@ -133,7 +141,7 @@ class AdminUserController extends Controller
         Log::info('Usuario autenticado:', ['user' => $id]);
         // Logging para depuración
         Log::info('Actualizando usuario ID: ' . $id, ['request_data' => $request->all()]);
-        
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
@@ -144,7 +152,7 @@ class AdminUserController extends Controller
 
         // Ajustar el valor de is_admin para que sea un booleano explícito
         $validated['is_admin'] = $request->has('is_admin') ? true : false;
-        
+
         // Si no se proporciona una nueva contraseña, eliminarla de los datos a actualizar
         if (empty($validated['password'])) {
             unset($validated['password']);
@@ -152,7 +160,7 @@ class AdminUserController extends Controller
 
         // Realizar la solicitud PUT a la API
         $response = $this->apiService->put("/users/{$id}", $validated);
-        
+
         // Logging de la respuesta
         Log::info('Respuesta API al actualizar usuario:', ['response' => $response]);
 
@@ -228,11 +236,11 @@ class AdminUserController extends Controller
     public function attendanceHistory($id)
     {
         $response = $this->apiService->get("/users/{$id}");
-        
+
         if (!isset($response['users'])) {
             return back()->with('error', 'No se pudo cargar el usuario');
         }
-        
+
         $user = $response['users'];
         $attendance = $this->apiService->get("/users/{$id}/attendance") ?? [];
 
