@@ -161,13 +161,21 @@ class AdminEventController extends Controller
     {
         $response = $this->apiService->delete("/events/{$id}");
 
-        if ($response['success']) {
-            return redirect()->route('admin.events.index')
-                ->with('success', 'Evento eliminado exitosamente');
+        if (isset($response['message'])) {
+            switch ($response['message']) {
+                case 'No tienes permisos para realizar esta acción':
+                    return back()->with('error', 'No tienes permisos para eliminar este evento');
+                case 'El evento no se ha encontrado':
+                    return back()->with('error', 'El evento no se ha encontrado');
+                case 'El evento ha sido borrado correctamente':
+                    return redirect()->route('admin.events.index')
+                        ->with('success', 'Evento eliminado exitosamente');
+            }
         }
 
-        return back()->with('error', 'Error al eliminar el evento');
+        return back()->with('error', 'Error inesperado al eliminar el evento');
     }
+
 
     /**
      * Manage event registrations.
