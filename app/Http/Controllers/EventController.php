@@ -3,19 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Services\ApiService;
+use App\Services\PDFService;
 use App\Http\Requests\EventRequest;
 use App\Http\Requests\SeleccionEventsRequest;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
+use App\Trait\Mail;
+
 
 class EventController extends Controller
 {
+    use Mail;
     protected $apiService;
+    protected $pdfService;
 
-    public function __construct(ApiService $apiService)
+    public function __construct(ApiService $apiService, PDFService $pdfService)
     {
         $this->apiService = $apiService;
+        $this->pdfService = $pdfService; 
         $this->middleware(\App\Http\Middleware\CheckApiToken::class)->except(['index', 'show']);
+        $this->initializeMailer();
     }
 
     /**
@@ -208,6 +215,16 @@ class EventController extends Controller
                 return redirect()->route('events.show', $id)
                            ->with('error', 'No se pudo completar el registro');
             }
+
+            $event = $this->apiService->get("/events/{$id}");
+
+            $evento = $event['event']['title']; 
+            $fecha = $event['event']['date'];    
+            $horaInicio = $event['event']['start_time']; 
+            $horaFin= $event['event']['end_time']; 
+            $lugar = $event['event']['location'];   
+
+            $this->sendTicketEvent($user['email'], $user['name'], $evento, $fecha, $horaInicio, $horaFin, $lugar);
 
             return redirect()->route('events.registration.success', ['id' => $response['event_id']])
                         ->with('success', 'Registro completado con éxito');

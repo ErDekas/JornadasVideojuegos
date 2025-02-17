@@ -4,14 +4,18 @@ namespace App\Trait;
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+//use App\Services\PdfService;
+
 
 trait Mail
 {
     private PHPMailer $mailer;
+    //private PdfService $pdfService;
 
     public function __construct()
     {
         $this->mailer = new PHPMailer(true);
+        //$this->pdfService = new PdfService();
         $this->configureMailer();
     }
 
@@ -153,6 +157,28 @@ trait Mail
 
             $this->mailer->Body = $content;
 
+            return $this->mailer->send();
+        } catch (Exception $e) {
+            error_log("Error al enviar correo: " . $e->getMessage());
+            return false;
+        }
+    }
+
+
+
+
+    public function sendTicketEvent(string $email, string $nombre, string $evento, string $fecha, string $horaInicio, string $horaFin, string $lugar){
+        $this->initializeMailer();
+        try {
+            //die("he entrado");
+            $pdfPath = $this->pdfService->createPDF("Ticket del registro al evento", $nombre, $evento, $fecha, $horaInicio, $horaFin, $lugar);
+
+            $this->mailer->addAddress($email, $nombre);
+            $this->mailer->Subject = 'Tu documento en PDF';
+            $this->mailer->Body = "Se le adjunta su ticket del registro al evento";
+
+            $this->mailer->addAttachment($pdfPath, 'documento.pdf');
+            
             return $this->mailer->send();
         } catch (Exception $e) {
             error_log("Error al enviar correo: " . $e->getMessage());

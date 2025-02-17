@@ -6,7 +6,7 @@
     <div class="col-md-4 mb-4">
         <div class="card text-center h-100">
             <div class="card-body">
-                <img src="http://127.0.0.1:8080/storage/{{ $speaker['photo_url'] }}"
+                <img src="{{ $speaker['photo_url'] }}"
                     alt="{{ $speaker['name'] }}"
                     class="rounded-circle mb-3"
                     style="width: 150px; height: 150px; object-fit: cover;">

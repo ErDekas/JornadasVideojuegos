@@ -2,7 +2,7 @@
 @section('content')
 <div class="card">
     <div class="card-body text-center">
-        <img src="http://127.0.0.1:8080/storage/{{ $speaker['speaker']['photo_url'] }}" alt="{{ $speaker['speaker']['name'] }}" 
+        <img src="{{ $speaker['speaker']['photo_url'] }}" alt="{{ $speaker['speaker']['name'] }}" 
              class="rounded-circle mb-3" style="width: 200px; height: 200px; object-fit: cover;">
         <h1>{{ $speaker['speaker']['name'] }}</h1>
             <ul class="list-unstyled">

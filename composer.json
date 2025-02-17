@@ -14,6 +14,7 @@
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.6",
         "phpmailer/phpmailer": "^6.9",
+        "setasign/fpdf": "^1.8",
         "srmklive/paypal": "^3.0"
     },
     "require-dev": {
