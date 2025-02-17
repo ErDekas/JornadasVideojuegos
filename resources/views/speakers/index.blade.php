@@ -13,7 +13,6 @@
                 <h5 class="card-title">{{ $speaker['name'] }}</h5>
                 <ul class="list-unstyled">
                     @php
-                        // Verificamos si 'expertise_areas' es una cadena y la decodificamos
                         $expertise = is_string($speaker['expertise_areas']) ? json_decode($speaker['expertise_areas'], true) : $speaker['expertise_areas'];
                     @endphp
 

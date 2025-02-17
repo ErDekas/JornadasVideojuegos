@@ -66,12 +66,12 @@ class AdminSpeakerController extends Controller
 
         // Manejar la subida de la imagen
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('speakers', 'public');
+            $path = $request->file('image')->store('public/images', 'public');
+            //dd($path);
             $validated['photo_url'] = asset('storage/' . $path);
         }
 
         $response = $this->apiService->post("/speakers", $validated);
-        dd($response);
         if ($response['success'] ?? false) {
             return redirect()->route('admin.speakers.index')
                 ->with('success', 'Ponente creado exitosamente');
