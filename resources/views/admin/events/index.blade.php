@@ -10,18 +10,21 @@
     </div>
 
     <div class="card">
-        <div class="card-body">eventos
+        <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-striped table-hover">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Título</th>
+                            <th>Descripción</th>
+                            <th>Tipo</th>
                             <th>Fecha</th>
-                            <th>Hora</th>
-                            <th>Ponente</th>
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Plazas</th>
                             <th>Asistentes</th>
-                            <th>Acciones</th>
+                            <th>Ubicación</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -31,7 +34,7 @@
                             <td>{{ $evento['title'] }}</td>
                             <td>{{ $evento['description'] }}</td>
                             <td>{{ $evento['type'] }}</td>
-                            <td>{{ $evento['date'] }}</td>
+                            <td class="text-muted date-to-format" data-date="{{ $evento['date'] }}">{{ $evento['date'] }}</td>
                             <td>{{ $evento['start_time'] }}</td>
                             <td>{{ $evento['end_time'] }}</td>
                             <td>{{ $evento['max_attendees'] }}</td>
@@ -66,4 +69,41 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Seleccionar todos los elementos con fechas
+    const dateElements = document.querySelectorAll('.date-to-format');
+
+    // Función para formatear la fecha
+    function formatDate(isoString) {
+        const date = new Date(isoString);
+        
+        const options = { 
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        };
+
+        return date.toLocaleDateString('es-ES', options);
+    }
+
+    // Función para limpiar el string ISO
+    function cleanISOString(dirtyString) {
+        return dirtyString.replace(/\.\d+Z$/, 'Z').replace('Z', '');
+    }
+
+    // Formatear cada fecha
+    dateElements.forEach(element => {
+        const rawDate = element.dataset.date;
+        if (rawDate) {
+            const cleanDate = cleanISOString(rawDate);
+            try {
+                element.textContent = formatDate(cleanDate);
+            } catch (error) {
+                console.error('Error al formatear la fecha:', error);
+            }
+        }
+    });
+});
+</script>
 @endsection

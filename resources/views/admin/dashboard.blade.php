@@ -31,11 +31,6 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" href="{{ route('admin.payments.index') }}">
-                                <i class="fas fa-dollar-sign me-2"></i> Ingresos
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" href="{{ url('/logout') }}">Cerrar sesión</a>
                             
                         </li>
