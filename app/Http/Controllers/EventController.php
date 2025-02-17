@@ -206,6 +206,32 @@ class EventController extends Controller
                            ->with('error', 'Debes iniciar sesión para registrarte');
             }
 
+            $userRegistrations = $this->apiService->get("/users/{$user['id']}");
+            $counterConference = 0;
+            $counterWorkshop = 0;
+            foreach($userRegistrations['eventUser'] as $userEvent){
+                
+                if($userEvent['type'] === 'conference'){
+                    $counterConference++;
+                }
+                else if($userEvent['type'] === 'workshop'){
+                    $counterWorkshop++;
+                }
+               
+            }
+            
+            $event = $this->apiService->get("/events/{$id}");
+
+            if ($event['event']['type'] === 'conference' && $counterConference >= 5) {
+                return redirect()->route('events.show', $id)
+                           ->with('error', 'Has alcanzado el límite de conferencias permitidas');
+            }
+        
+            if ($event['event']['type'] === 'workshop' && $counterWorkshop >= 4) {
+                return redirect()->route('events.show', $id)
+                           ->with('error', 'Has alcanzado el límite de talleres permitidos');
+            }
+
             // Attempt to register
             $response = $this->apiService->post("/events/{$id}/register", [
                 'user_id' => $user['id']
@@ -215,8 +241,6 @@ class EventController extends Controller
                 return redirect()->route('events.show', $id)
                            ->with('error', 'No se pudo completar el registro');
             }
-
-            $event = $this->apiService->get("/events/{$id}");
 
             $evento = $event['event']['title']; 
             $fecha = $event['event']['date'];    
