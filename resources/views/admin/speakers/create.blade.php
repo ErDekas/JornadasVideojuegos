@@ -38,10 +38,10 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="image" class="form-label">Foto</label>
-                    <input type="file" class="form-control @error('image') is-invalid @enderror" 
-                           id="image" name="image">
-                    @error('image')
+                    <label for="photo_url" class="form-label">Foto</label>
+                    <input type="file" class="form-control @error('photo_url') is-invalid @enderror" 
+                           id="photo_url" name="photo_url">
+                    @error('photo_url')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>

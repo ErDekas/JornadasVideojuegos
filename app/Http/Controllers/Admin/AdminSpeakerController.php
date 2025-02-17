@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Services\ApiService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AdminSpeakerController extends Controller
 {
@@ -52,33 +53,60 @@ class AdminSpeakerController extends Controller
      */
     public function store(Request $request)
     {
+        Log::info('Datos recibidos en store:', [
+            'all_request_data' => $request->all(),
+            'has_file' => $request->hasFile('photo_url'),
+            'files' => $request->allFiles()
+        ]);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'social_links' => 'nullable',
             'expertise_areas' => 'nullable|string'
         ]);
-        // Convertir expertise_areas de string a array
+
+        // Preparar los datos
+        $data = [
+            'name' => $validated['name'],
+            'social_links' => $validated['social_links'] ?? null,
+        ];
+
+        // Procesar expertise_areas
         if ($request->filled('expertise_areas')) {
-            $validated['expertise_areas'] = explode(',', $request->input('expertise_areas'));
-            $validated['expertise_areas'] = array_map('trim', $validated['expertise_areas']); // Eliminar espacios extra
+            $data['expertise_areas'] = array_map('trim', explode(',', $request->input('expertise_areas')));
         }
 
-        // Manejar la subida de la imagen
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('speakers', 'public');
-            $validated['photo_url'] = asset('storage/' . $path);
+        try {
+            if ($request->hasFile('photo_url')) {
+                $response = $this->apiService->postWithFile(
+                    "/speakers",
+                    $request->file('photo_url'),
+                    $data
+                );
+            } else {
+                $response = $this->apiService->post("/speakers", $data);
+            }
 
-            dd($validated['photo_url']);
+            Log::info('Respuesta de la API:', $response);
+
+            if (isset($response['data_count']) && $response['data_count'] === 1) {
+                return redirect()->route('admin.speakers.index')
+                    ->with('success', 'Ponente creado exitosamente');
+            }
+        } catch (\Exception $e) {
+            Log::error('Error al crear ponente:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()
+                ->with('error', 'Error al crear el ponente: ' . $e->getMessage())
+                ->withInput();
         }
 
-        $response = $this->apiService->post("/speakers", $validated);
-        if ($response['data_count'] === 1) {
-            return redirect()->route('admin.speakers.index')
-                ->with('success', 'Ponente creado exitosamente');
-        }
-
-        return back()->with('error', 'Error al crear el ponente')
+        return back()
+            ->with('error', 'Error al crear el ponente')
             ->withInput();
     }
 
