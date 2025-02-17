@@ -121,31 +121,36 @@ class AdminSpeakerController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'expertise_areas' => 'required|string|max:255',
-            'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'social_links' => 'nullable',
-            'exprestise_areas' => 'nullable|array'
-        ]);
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'expertise_areas' => 'nullable|string', // Cambiamos de array a string porque vendrá como texto
+        'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'social_links' => 'nullable'
+    ]);
 
-        // Manejar la subida de la nueva imagen
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('speakers', 'public');
-            $validated['photo_url'] = asset('storage/' . $path);
-        }
-
-        $response = $this->apiService->put("/speakers/{$id}", $validated);
-
-        if ($response['success'] ?? false) {
-            return redirect()->route('admin.speakers.show', $id)
-                ->with('success', 'Ponente actualizado exitosamente');
-        }
-
-        return back()->with('error', 'Error al actualizar el ponente')
-            ->withInput();
+    // Convertir expertise_areas de string a array
+    if ($request->filled('expertise_areas')) {
+        $validated['expertise_areas'] = explode(',', $request->input('expertise_areas'));
+        $validated['expertise_areas'] = array_map('trim', $validated['expertise_areas']); // Eliminar espacios extra
     }
+
+    // Manejar la subida de la nueva imagen
+    if ($request->hasFile('photo_url')) {
+        $path = $request->file('photo_url')->store('speakers', 'public');
+        $validated['photo_url'] = asset('storage/' . $path);
+    }
+
+    $response = $this->apiService->put("/speakers/{$id}", $validated);
+    if ($response['message']=="El ponente ha sido actualizado correctamente" ?? false) {
+        return redirect()->route('admin.speakers.index', $id)
+            ->with('success', 'Ponente actualizado exitosamente');
+    }
+
+    return back()->with('error', 'Error al actualizar el ponente')
+        ->withInput();
+}
+
 
     /**
      * Remove the specified speaker from storage.
