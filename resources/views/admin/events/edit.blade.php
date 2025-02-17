@@ -7,6 +7,13 @@
             <h3>Editar Evento</h3>
         </div>
         <div class="card-body">
+
+        @if(session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
+
             <form action="{{ route('admin.events.update', $event['id']) }}" method="POST">
                 @csrf
                 @method('PUT')

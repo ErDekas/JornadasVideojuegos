@@ -7,6 +7,14 @@
             <h3>Crear Nuevo Evento</h3>
         </div>
         <div class="card-body">
+
+        @if(session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
+
+
             <form action="{{ route('admin.events.store') }}" method="POST">
                 @csrf
 
@@ -87,7 +95,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label for="current_attendees" class="form-label">Máximo de asistentes</label>
+                            <label for="current_attendees" class="form-label">Asistentes actuales</label>
                             <input type="number" class="form-control @error('current_attendees') is-invalid @enderror"
                                 id="current_attendees" name="current_attendees" value="{{ old('current_attendees', 'current_attendees') }}" required>
                             @error('current_attendees')

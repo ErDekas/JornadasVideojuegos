@@ -6,6 +6,7 @@ use App\Services\ApiService;
 use App\Http\Requests\EventRequest;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class AdminEventController extends Controller
 {
@@ -61,6 +62,26 @@ class AdminEventController extends Controller
      */
     public function store(EventRequest $request)
     {
+
+        $events = $this->apiService->get("/events");
+        foreach($events['events'] as $event){
+            if (
+                $request->type === $event['type'] && 
+                Carbon::parse($request->date)->toDateString() === Carbon::parse($event['date'])->toDateString()) {
+
+                    $eventStart = Carbon::parse($event['start_time']);
+                    $eventEnd = Carbon::parse($event['end_time']);
+                    $requestStart = Carbon::parse($request->start_time);
+                    $requestEnd = Carbon::parse($request->end_time);
+
+                    if (($requestStart->between($eventStart, $eventEnd, true) || $requestEnd->between($eventStart, $eventEnd, true)) ||
+                        ($eventStart->between($requestStart, $requestEnd, true) || $eventEnd->between($requestStart, $requestEnd, true))) {
+                            return back()->with('error', 'Error al crear el evento. Ya hay un evento de ese tipo en esa fecha y en ese horario.')
+                                ->withInput();
+                    }
+            }
+        }
+
         $response = $this->apiService->post("/events", [
             'title' => $request->title,
             'description' => $request->description,
@@ -73,6 +94,9 @@ class AdminEventController extends Controller
             'location' => $request->location,
             'speakers' => $request->speakers // Asegúrate de que el campo 'speakers' esté en el formulario
         ]);
+
+        
+
         //  dd($response);
         if ($response['message']=="El evento ha sido agregado correctamente") {
             return redirect()->route('admin.events.index')
@@ -130,6 +154,26 @@ class AdminEventController extends Controller
      */
     public function update(EventRequest $request, $id)
     {
+
+        $events = $this->apiService->get("/events");
+        foreach($events['events'] as $event){
+            if (
+                $request->type === $event['type'] && 
+                Carbon::parse($request->date)->toDateString() === Carbon::parse($event['date'])->toDateString()) {
+
+                    $eventStart = Carbon::parse($event['start_time']);
+                    $eventEnd = Carbon::parse($event['end_time']);
+                    $requestStart = Carbon::parse($request->start_time);
+                    $requestEnd = Carbon::parse($request->end_time);
+
+                    if (($requestStart->between($eventStart, $eventEnd, true) || $requestEnd->between($eventStart, $eventEnd, true)) ||
+                        ($eventStart->between($requestStart, $requestEnd, true) || $eventEnd->between($requestStart, $requestEnd, true))) {
+                            return back()->with('error', 'Error al actualizar el evento. Ya hay un evento de ese tipo en esa fecha y en ese horario.')
+                                ->withInput();
+                    }
+            }
+        }
+
         // Incluye los datos de los ponentes en la actualización
         $response = $this->apiService->put("/events/{$id}", [
             'title' => $request->title,
