@@ -28,22 +28,38 @@
                             <td>{{ $ponente['id'] }}</td>
                             <td>{{ $ponente['name'] }}</td>
                             <td>{{ $ponente['photo_url'] }}</td>
-                            <td>{{ $ponente['expertise_areas'] ?? 'No especificado' }}</td>
-                            <td>{{ $ponente['social_links'] }}</td>
+                            <td>
+                                @if(is_array($ponente['expertise_areas']))
+                                @foreach($ponente['expertise_areas'] as $area)
+                                <p>{{ $area }}</p>
+                                @endforeach
+                                @else
+                                {{ $ponente['expertise_areas'] ?? 'No especificado' }}
+                                @endif
+                            </td>
+                            <td>
+                                @if(is_array($ponente['social_links']))
+                                @foreach($ponente['social_links'] as $link)
+                                <a href="{{ $link }}" target="_blank">{{ $link }}</a><br>
+                                @endforeach
+                                @else
+                                <a href="{{ $ponente['social_links'] }}" target="_blank">{{ $ponente['social_links'] }}</a>
+                                @endif
+                            </td>
                             <td>
                                 <div class="btn-group" role="group">
-                                    <a href="{{ route('admin.speakers.edit', $ponente['id']) }}" 
-                                       class="btn btn-primary btn-sm">
+                                    <a href="{{ route('admin.speakers.edit', $ponente['id']) }}"
+                                        class="btn btn-primary btn-sm">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('admin.speakers.destroy', $ponente['id']) }}" 
-                                          method="POST" 
-                                          class="d-inline">
+                                    <form action="{{ route('admin.speakers.destroy', $ponente['id']) }}"
+                                        method="POST"
+                                        class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" 
-                                                class="btn btn-danger btn-sm"
-                                                onclick="return confirm('¿Estás seguro?')">
+                                        <button type="submit"
+                                            class="btn btn-danger btn-sm"
+                                            onclick="return confirm('¿Estás seguro?')">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>

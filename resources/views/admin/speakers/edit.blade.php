@@ -23,7 +23,7 @@
                 <div class="mb-3">
                     <label for="expertise_areas" class="form-label">Especialidad</label>
                     <input type="text" class="form-control @error('expertise_areas') is-invalid @enderror" 
-                           id="expertise_areas" name="expertise_areas" value="{{ old('expertise_areas', $ponente['expertise_areas']) }}" required>
+                           id="expertise_areas" name="expertise_areas" value="{{ old('expertise_areas', is_array($ponente['expertise_areas']) ? implode(', ', $ponente['expertise_areas']) : $ponente['expertise_areas']) }}" required>
                     @error('expertise_areas')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -32,7 +32,7 @@
                 <div class="mb-3">
                     <label for="social_links" class="form-label">Redes sociales</label>
                     <textarea class="form-control @error('social_links') is-invalid @enderror" 
-                              id="social_links" name="social_links" rows="4">{{ old('social_links', $ponente['social_links']) }}</textarea>
+                              id="social_links" name="social_links" rows="4">{{ old('social_links', is_array($ponente['social_links']) ? implode(', ', $ponente['social_links']) : $ponente['social_links']) }}</textarea>
                     @error('social_links')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
