@@ -156,32 +156,60 @@ class AdminSpeakerController extends Controller
      */
     public function update(Request $request, $id)
     {
+        Log::info('Datos recibidos en update:', [
+            'all_request_data' => $request->all(),
+            'has_file' => $request->hasFile('photo_url'),
+            'files' => $request->allFiles()
+        ]);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'expertise_areas' => 'nullable|string', // Cambiamos de array a string porque vendrá como texto
-            'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'expertise_areas' => 'nullable|string',
+            'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'social_links' => 'nullable'
         ]);
 
-        // Convertir expertise_areas de string a array
+        // Preparar los datos
+        $data = [
+            'name' => $validated['name'],
+            'social_links' => $validated['social_links'] ?? null,
+        ];
+
+        // Procesar expertise_areas
         if ($request->filled('expertise_areas')) {
-            $validated['expertise_areas'] = explode(',', $request->input('expertise_areas'));
-            $validated['expertise_areas'] = array_map('trim', $validated['expertise_areas']); // Eliminar espacios extra
+            $data['expertise_areas'] = array_map('trim', explode(',', $request->input('expertise_areas')));
         }
 
-        // Manejar la subida de la nueva imagen
-        if ($request->hasFile('photo_url')) {
-            $path = $request->file('photo_url')->store('speakers', 'public');
-            $validated['photo_url'] = asset('storage/' . $path);
+        try {
+            if ($request->hasFile('photo_url')) {
+                $response = $this->apiService->putWithFile(
+                    "/speakers/{$id}",
+                    $request->file('photo_url'),
+                    $data
+                );
+            } else {
+                $response = $this->apiService->put("/speakers/{$id}", $data);
+            }
+
+            Log::info('Respuesta de la API en update:', $response);
+
+            if (isset($response['message']) && $response['message'] == "El ponente ha sido actualizado correctamente") {
+                return redirect()->route('admin.speakers.index')
+                    ->with('success', 'Ponente actualizado exitosamente');
+            }
+        } catch (\Exception $e) {
+            Log::error('Error al actualizar ponente:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()
+                ->with('error', 'Error al actualizar el ponente: ' . $e->getMessage())
+                ->withInput();
         }
 
-        $response = $this->apiService->put("/speakers/{$id}", $validated);
-        if ($response['message'] == "El ponente ha sido actualizado correctamente" ?? false) {
-            return redirect()->route('admin.speakers.index', $id)
-                ->with('success', 'Ponente actualizado exitosamente');
-        }
-
-        return back()->with('error', 'Error al actualizar el ponente')
+        return back()
+            ->with('error', 'Error al actualizar el ponente')
             ->withInput();
     }
 
