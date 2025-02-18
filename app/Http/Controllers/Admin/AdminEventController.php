@@ -80,6 +80,10 @@ class AdminEventController extends Controller
                                 ->withInput();
                     }
             }
+            if(Carbon::parse($request->date)->toDateString() !== '2025-03-13' || Carbon::parse($request->date)->toDateString() !== '2025-03-14'){
+                return back()->with('error', 'Error al crear el evento. Los días disponibles son el 13 y 14 de marzo de 2025.')
+                ->withInput();
+            }
         }
 
         $response = $this->apiService->post("/events", [
