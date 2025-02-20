@@ -160,7 +160,6 @@ class AdminEventController extends Controller
     {
 
         $events = $this->apiService->get("/events");
-        dd($request->date);         
         foreach($events['events'] as $event){
             if (
                 $request->type === $event['type'] && 
